@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
 
@@ -52,7 +54,12 @@ public class SudokuJ2ME extends MIDlet {
  * Main Canvas
  */
   class MainCanvas extends Canvas {
+    private final long SECOND = 1000;
     private SudokuJ2ME parent = null;
+    private TimerTask updateTask;
+    private Timer timer;
+    boolean selection;
+    boolean toggle;
 
     public MainCanvas(SudokuJ2ME parent) {
       this.parent = parent;
@@ -62,11 +69,41 @@ public class SudokuJ2ME extends MIDlet {
       puzzleData = puzzleData();
     }
 
+    protected void showNotify() {
+      startFrameTimer();
+    }
+
+    protected void hideNotify() {
+      stopFrameTimer();
+    }
+
+    protected void startFrameTimer() {
+      timer = new Timer();
+      updateTask = new TimerTask() {
+        public void run() {
+          if (selection) {
+            repaint();
+          } else {
+            // paint the clock
+            repaint(width - largeFont.stringWidth(timeOfday) - padding,
+                padding, largeFont.stringWidth(timeOfday), largeFont.getHeight());
+          }
+        }
+      };
+      timer.schedule(updateTask, SECOND / 2, SECOND / 2);
+    }
+
+    protected void stopFrameTimer() {
+      timer.cancel();
+    }
+
     public void keyPressed(int keyCode){
       String key = getKeyName(keyCode).toUpperCase();
       if (key.equals("SELECT")) {
         if (nums.indexOf(selected) != -1) {
           highlight = highlight.equals(selected) ? "" : selected;
+        } else {
+          selection = (selection) ? false : true;
         }
       } else if (key.equals("SOFT1")) {
         // menu
@@ -111,7 +148,12 @@ public class SudokuJ2ME extends MIDlet {
         int thisX = i / 9;
         int thisY = i % 9;
         if ((thisX == selectX) && (thisY == selectY)) {
-          g.setColor(WHITE);
+          if (selection) {
+            g.setColor((toggle) ? WHITE : DARK);
+            toggle = (toggle) ? false : true;
+          } else {
+            g.setColor(WHITE);
+          }
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + cbarHeight, cellSize, cellSize);
           g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + cbarHeight - 1, cellSize + 2, cellSize + 2);
         } else if (s.equals(highlight) && !s.equals(".")) {
