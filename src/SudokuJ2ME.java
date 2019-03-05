@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
 
@@ -32,6 +33,7 @@ public class SudokuJ2ME extends MIDlet {
   private final String nums = "0123456789";
   private int selectX = 4;
   private int selectY = 4;
+  private Vector puzzleMoves = new Vector();
   private String puzzleData;
   private String highlight = "";
   private String selected = "";
@@ -50,6 +52,19 @@ public class SudokuJ2ME extends MIDlet {
   protected void destroyApp(boolean unconditional)
       throws MIDletStateChangeException {}
 
+  private String puzzleData() {
+    StringBuffer sb = new StringBuffer();
+    InputStream is = getClass().getResourceAsStream("puzzle_easy.txt");
+    try {
+      int chars, i = 0;
+      while ((chars = is.read()) != -1) {
+        sb.append((char) chars);
+      }
+      return sb.toString();
+    }catch (Exception e) {}
+    return null;
+  }
+
 /*
  * Main Canvas
  */
@@ -59,7 +74,7 @@ public class SudokuJ2ME extends MIDlet {
     private TimerTask updateTask;
     private Timer timer;
     boolean selection;
-    boolean toggle;
+    boolean toggle = true;;
 
     public MainCanvas(SudokuJ2ME parent) {
       this.parent = parent;
@@ -67,6 +82,7 @@ public class SudokuJ2ME extends MIDlet {
       width = getWidth();
       height = getHeight();
       puzzleData = puzzleData();
+      puzzleMoves.addElement(puzzleData);
     }
 
     protected void showNotify() {
@@ -81,6 +97,7 @@ public class SudokuJ2ME extends MIDlet {
       timer = new Timer();
       updateTask = new TimerTask() {
         public void run() {
+        toggle = (toggle) ? false : true;
           if (selection) {
             repaint();
           } else {
@@ -118,12 +135,24 @@ public class SudokuJ2ME extends MIDlet {
       } else if (key.equals("RIGHT")) {
         selectX = (selectX >= 8) ? 0 : ++selectX;
       } else if (nums.indexOf(key) != -1) {
-        highlight = highlight.equals(key) ? "" : key;
+        if (selection) {
+          int index = selectX * 9 + selectY;
+          String newMove = lastMove().substring(0, index) + key + lastMove().substring(index + 1);
+          puzzleMoves.addElement(newMove);
+        } else {
+          highlight = highlight.equals(key) ? "" : key;
+        }
       }
+      if (!(key.equals("SELECT"))) selection = false;
       this.repaint();
     }
 
+    public String lastMove() {
+      return (String) puzzleMoves.lastElement();
+    }
+
     public void paint(Graphics g) {
+      String thisData = lastMove();
       simplerTimes = new SimplerTimes();
       timeOfday = simplerTimes.timeOfday(true);
       g.setColor(BLACK);
@@ -134,7 +163,7 @@ public class SudokuJ2ME extends MIDlet {
       g.drawString(timeOfday, width - padding, padding, Graphics.RIGHT | Graphics.TOP);
       Toolbar.drawMenuIcon(g, 18, height - 20);
       // Toolbar.drawBackIcon(g, width - 18, height - 20);
-      selected = puzzleData.substring(selectX * 9 + selectY, selectX * 9 + selectY + 1);
+      selected = thisData.substring(selectX * 9 + selectY, selectX * 9 + selectY + 1);
 
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
@@ -143,42 +172,27 @@ public class SudokuJ2ME extends MIDlet {
         g.drawLine(offset + margin, cbarHeight + 1, offset + margin, boardSize + cbarHeight - 1);
       }
 
-      for (int i = 0; i < puzzleData.length(); i++) {
-        String s = puzzleData.substring(i, i + 1);
+      for (int i = 0; i < thisData.length(); i++) {
+        String s = thisData.substring(i, i + 1);
+        boolean userMove = puzzleData.substring(i, i + 1).equals(".");
         int thisX = i / 9;
         int thisY = i % 9;
         if ((thisX == selectX) && (thisY == selectY)) {
-          if (selection) {
-            g.setColor((toggle) ? WHITE : DARK);
-            toggle = (toggle) ? false : true;
-          } else {
+          if (!(selection && toggle)) {
             g.setColor(WHITE);
+            g.drawRect(cellSize * thisX + margin, cellSize * thisY + cbarHeight, cellSize, cellSize);
+            g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + cbarHeight - 1, cellSize + 2, cellSize + 2);
           }
-          g.drawRect(cellSize * thisX + margin, cellSize * thisY + cbarHeight, cellSize, cellSize);
-          g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + cbarHeight - 1, cellSize + 2, cellSize + 2);
         } else if (s.equals(highlight) && !s.equals(".")) {
           g.setColor(YELLOW);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + cbarHeight, cellSize, cellSize);
         }
         if (!s.equals(".")) {
-          g.setColor(s.equals(highlight) ? YELLOW : WHITE);
+          g.setColor(s.equals(highlight) ? YELLOW : (userMove ? WHITE : CYAN));
           specialFont.numbers(g, s, cellSize * thisX + margin + 7, cellSize * thisY + cbarHeight + 3);
         }
       }
     }
-  }
-
-  private String puzzleData() {
-    StringBuffer sb = new StringBuffer();
-    InputStream is = getClass().getResourceAsStream("puzzle_easy.txt");
-    try {
-      int chars, i = 0;
-      while ((chars = is.read()) != -1) {
-        sb.append((char) chars);
-      }
-      return sb.toString();
-    }catch (Exception e) {}
-    return null;
   }
 
 }
