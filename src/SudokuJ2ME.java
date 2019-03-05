@@ -7,7 +7,7 @@ import javax.microedition.midlet.*;
  */
 public class SudokuJ2ME extends MIDlet {
   protected final String appTitle = "Sudoku J2ME";
-  private GoodTimes goodtimes;
+  private SimplerTimes simplerTimes;
   private String timeOfday;
   private Display display = null;
   private MainCanvas mainCanvas = null;
@@ -56,8 +56,8 @@ public class SudokuJ2ME extends MIDlet {
     }
 
     public void paint(Graphics g) {
-      goodtimes = new GoodTimes();
-      timeOfday = goodtimes.timeOfday(true);
+      simplerTimes = new SimplerTimes();
+      timeOfday = simplerTimes.timeOfday(true);
       g.setColor(BLACK);
       g.fillRect(0, 0, width, height);
       g.setColor(WHITE);
