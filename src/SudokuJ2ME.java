@@ -23,9 +23,16 @@ public class SudokuJ2ME extends MIDlet {
   private final int boardSize = cellSize * 9;
   private final int BLACK = 0x000000;
   private final int WHITE = 0xFFFFFF;
+  private final int DARK = 0x333333;
   private final int CYAN = 0x00AAFF;
   private final int BLUE = 0x000088;
+  private final int YELLOW = 0xFFFF00;
+  private final String nums = "0123456789";
+  private int selectX = 4;
+  private int selectY = 4;
   private String puzzleData;
+  private String highlight = "";
+  private String selected = "";
 
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
@@ -55,6 +62,30 @@ public class SudokuJ2ME extends MIDlet {
       puzzleData = puzzleData();
     }
 
+    public void keyPressed(int keyCode){
+      String key = getKeyName(keyCode).toUpperCase();
+      if (key.equals("SELECT")) {
+        if (nums.indexOf(selected) != -1) {
+          highlight = highlight.equals(selected) ? "" : selected;
+        }
+      } else if (key.equals("SOFT1")) {
+        // menu
+      } else if (key.equals("SOFT2")) {
+        // back
+      } else if (key.equals("UP")) {
+        selectY = (selectY <= 0) ? 8 : --selectY;
+      } else if (key.equals("DOWN")) {
+        selectY = (selectY >= 8) ? 0 : ++selectY;
+      } else if (key.equals("LEFT")) {
+        selectX = (selectX <= 0) ? 8 : --selectX;
+      } else if (key.equals("RIGHT")) {
+        selectX = (selectX >= 8) ? 0 : ++selectX;
+      } else if (nums.indexOf(key) != -1) {
+        highlight = highlight.equals(key) ? "" : key;
+      }
+      this.repaint();
+    }
+
     public void paint(Graphics g) {
       simplerTimes = new SimplerTimes();
       timeOfday = simplerTimes.timeOfday(true);
@@ -66,6 +97,7 @@ public class SudokuJ2ME extends MIDlet {
       g.drawString(timeOfday, width - padding, padding, Graphics.RIGHT | Graphics.TOP);
       Toolbar.drawMenuIcon(g, 18, height - 20);
       // Toolbar.drawBackIcon(g, width - 18, height - 20);
+      selected = puzzleData.substring(selectX * 9 + selectY, selectX * 9 + selectY + 1);
 
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
@@ -74,11 +106,21 @@ public class SudokuJ2ME extends MIDlet {
         g.drawLine(offset + margin, cbarHeight + 1, offset + margin, boardSize + cbarHeight - 1);
       }
 
-      g.setColor(WHITE);
       for (int i = 0; i < puzzleData.length(); i++) {
         String s = puzzleData.substring(i, i + 1);
+        int thisX = i / 9;
+        int thisY = i % 9;
+        if ((thisX == selectX) && (thisY == selectY)) {
+          g.setColor(WHITE);
+          g.drawRect(cellSize * thisX + margin, cellSize * thisY + cbarHeight, cellSize, cellSize);
+          g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + cbarHeight - 1, cellSize + 2, cellSize + 2);
+        } else if (s.equals(highlight) && !s.equals(".")) {
+          g.setColor(YELLOW);
+          g.drawRect(cellSize * thisX + margin, cellSize * thisY + cbarHeight, cellSize, cellSize);
+        }
         if (!s.equals(".")) {
-          specialFont.numbers(g, s, cellSize * (i / 9) + margin + 8, cellSize * (i % 9) + cbarHeight + 3);
+          g.setColor(s.equals(highlight) ? YELLOW : WHITE);
+          specialFont.numbers(g, s, cellSize * thisX + margin + 7, cellSize * thisY + cbarHeight + 3);
         }
       }
     }
