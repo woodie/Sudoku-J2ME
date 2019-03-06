@@ -21,6 +21,7 @@ public class SudokuJ2ME extends MIDlet {
   private final int boardSize = cellSize * 9;
   private final int BLACK = 0x000000;
   private final int WHITE = 0xFFFFFF;
+  private final int DARK = 0x333333;
   private final int GRAY = 0x888888;
   private final int CYAN = 0x00AAFF;
   private final int BLUE = 0x000088;
@@ -141,7 +142,7 @@ public class SudokuJ2ME extends MIDlet {
 
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
-        g.setColor(((i == 3) || (i == 6)) ? (selection ? GRAY : CYAN) : BLUE);
+        g.setColor(((i == 3) || (i == 6)) ? (selection ? GRAY : CYAN) : (selection ? DARK : BLUE));
         g.drawLine(margin + 1, offset + margin, boardSize + margin - 1, offset + margin);
         g.drawLine(offset + margin, margin + 1, offset + margin, boardSize + margin - 1);
       }
@@ -152,7 +153,7 @@ public class SudokuJ2ME extends MIDlet {
         int thisX = i % 9;
         int thisY = i / 9;
         if ((thisX == selectX) && (thisY == selectY)) {
-          g.setColor(WHITE);
+          g.setColor(selection ? GREEN : WHITE);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
           g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + margin - 1, cellSize + 2, cellSize + 2);
         } else if (s.equals(highlight) && !s.equals(".")) {
