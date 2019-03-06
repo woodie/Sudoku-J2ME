@@ -21,7 +21,7 @@ public class SudokuJ2ME extends MIDlet {
   private final int boardSize = cellSize * 9;
   private final int BLACK = 0x000000;
   private final int WHITE = 0xFFFFFF;
-  private final int GRAY = 0x999999;
+  private final int GRAY = 0x888888;
   private final int CYAN = 0x00AAFF;
   private final int BLUE = 0x000088;
   private final int GREEN = 0x88FF00;
@@ -116,7 +116,7 @@ public class SudokuJ2ME extends MIDlet {
         if (moveIndex + 1 < puzzleMoves.size()) ++moveIndex;
       } else if (nums.indexOf(key) != -1) {
         if (selection) {
-          int index = selectX * 9 + selectY;
+          int index = selectY * 9 + selectX;
           String newMove = lastMove().substring(0, index) + key + lastMove().substring(index + 1);
           if (puzzleMoves.size() > moveIndex + 1) puzzleMoves.setSize(moveIndex + 1);
           puzzleMoves.addElement(newMove);
@@ -137,11 +137,11 @@ public class SudokuJ2ME extends MIDlet {
       String thisData = lastMove();
       g.setColor(BLACK);
       g.fillRect(0, 0, width, height);
-      selected = puzzleData.substring(selectX * 9 + selectY, selectX * 9 + selectY + 1);
+      selected = puzzleData.substring(selectY * 9 + selectX, selectY * 9 + selectX + 1);
 
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
-        g.setColor(((i == 3) || (i == 6)) ? (selection ? GREEN : CYAN) : BLUE);
+        g.setColor(((i == 3) || (i == 6)) ? (selection ? GRAY : CYAN) : BLUE);
         g.drawLine(margin + 1, offset + margin, boardSize + margin - 1, offset + margin);
         g.drawLine(offset + margin, margin + 1, offset + margin, boardSize + margin - 1);
       }
@@ -149,21 +149,18 @@ public class SudokuJ2ME extends MIDlet {
       for (int i = 0; i < thisData.length(); i++) {
         String s = thisData.substring(i, i + 1);
         boolean userMove = puzzleData.substring(i, i + 1).equals(".");
-        int thisX = i / 9;
-        int thisY = i % 9;
+        int thisX = i % 9;
+        int thisY = i / 9;
         if ((thisX == selectX) && (thisY == selectY)) {
-          g.setColor(GRAY);
+          g.setColor(WHITE);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
-          if (selection) {
-            g.setColor(WHITE);
-            g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + margin - 1, cellSize + 2, cellSize + 2);
-          }
+          g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + margin - 1, cellSize + 2, cellSize + 2);
         } else if (s.equals(highlight) && !s.equals(".")) {
           g.setColor(YELLOW);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
         }
         if (!s.equals(".")) {
-          g.setColor(s.equals(highlight) ? YELLOW : (userMove ? WHITE : (selection ? GREEN : CYAN)));
+          g.setColor(s.equals(highlight) ? YELLOW : (userMove ? WHITE : (selection ? GRAY : CYAN)));
           specialFont.numbers(g, s, cellSize * thisX + margin + 7, cellSize * thisY + margin + 3);
         }
       }
