@@ -53,7 +53,7 @@ public class SudokuJ2ME extends MIDlet {
   private String puzzleData() {
     String puzzles[] = new String[20];
     StringBuffer sb = new StringBuffer(81);
-    InputStream is = getClass().getResourceAsStream("puzzles_simple.txt");
+    InputStream is = getClass().getResourceAsStream("puzzles_easy.txt");
     try {
       int n = 0;
       int chars, i = 0;
@@ -67,7 +67,6 @@ public class SudokuJ2ME extends MIDlet {
       }
       Random random = new Random();
       int index = random.nextInt(puzzles.length + 1);
-      System.out.println(puzzles[index]);
       return puzzles[index];
     } catch (Exception e) {}
     return null;
