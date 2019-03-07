@@ -90,6 +90,24 @@ public class SudokuJ2ME extends MIDlet {
       puzzleMoves.addElement(puzzleData);
     }
 
+    public void keyRepeated(int keyCode){
+      String key = getKeyName(keyCode).toUpperCase();
+      if (key.equals("UP")) {
+        selectY = (selectY <= 0) ? 8 : --selectY;
+      } else if (key.equals("DOWN")) {
+        selectY = (selectY >= 8) ? 0 : ++selectY;
+      } else if (key.equals("LEFT")) {
+        selectX = (selectX <= 0) ? 8 : --selectX;
+      } else if (key.equals("RIGHT")) {
+        selectX = (selectX >= 8) ? 0 : ++selectX;
+      } else if (key.equals("*")) {
+        if (moveIndex > 0) --moveIndex;
+      } else if (key.equals("#")) {
+        if (moveIndex + 1 < puzzleMoves.size()) ++moveIndex;
+      }
+      this.repaint();
+    }
+
     public void keyPressed(int keyCode){
       String key = getKeyName(keyCode).toUpperCase();
       if (key.equals("SELECT")) {
