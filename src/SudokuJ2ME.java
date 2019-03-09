@@ -28,6 +28,7 @@ public class SudokuJ2ME extends MIDlet {
   private final int GREEN = 0x88FF00;
   private final int YELLOW = 0xFFFF00;
   private final int SALMON = 0xFF8888;
+  private final int CRIMSON = 0x88000;
   private int selectX = 4;
   private int selectY = 4;
   private String modeLabel;
@@ -80,9 +81,9 @@ public class SudokuJ2ME extends MIDlet {
     } catch (Exception e) {}
   }
 
-/*
- * Main Canvas
- */
+ /*
+  * Main Canvas
+  */
   class MainCanvas extends Canvas {
     private final long SECOND = 1000;
     private SudokuJ2ME parent = null;
@@ -159,6 +160,10 @@ public class SudokuJ2ME extends MIDlet {
       }
     }
 
+    public void drawTick(Graphics g, int cx, int cy, int value) {
+      g.fillRect(cx + 5 + ((value - 1) % 3 * 7), cy + 3 + ((value - 1) / 3 * 8), 3, 5);
+    }
+
     public void paint(Graphics g) {
       g.setColor(BLACK);
       g.fillRect(0, 0, width, height);
@@ -184,12 +189,30 @@ public class SudokuJ2ME extends MIDlet {
           g.setColor(selection ? (usingPen ? GREEN : SALMON) : WHITE);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
           g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + margin - 1, cellSize + 2, cellSize + 2);
+          g.setColor(WHITE);
+          for (int t = 1; t < 10; t++) {
+            if (ticks[i * 9 + t - 1]) {
+              drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
+            }
+          }
         } else if (thisValue == highlight) {
           g.setColor(YELLOW);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
-        //} else if (ticks[i * 9 + highlight - 1]) {
-        //  g.setColor(SALMON);
-        //  g.fillRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
+        } else if ((highlight > -1) && (ticks[i * 9 + highlight - 1])) {
+          g.setColor(SALMON);
+          for (int t = 1; t < 10; t++) {
+            if (ticks[i * 9 + t - 1]) {
+              drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
+            }
+          }
+          g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
+        } else {
+          g.setColor(WHITE);
+          for (int t = 1; t < 10; t++) {
+            if (ticks[i * 9 + t - 1]) {
+              drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
+            }
+          }
         }
         if (thisValue != 0) {
           g.setColor((thisValue == highlight) ? YELLOW : (puzzleData[i] ? (selection ? GRAY : CYAN) : WHITE));
