@@ -27,14 +27,19 @@ public class SudokuJ2ME extends MIDlet {
   private final int BLUE = 0x000088;
   private final int GREEN = 0x88FF00;
   private final int YELLOW = 0xFFFF00;
+  private final int SALMON = 0xFF8888;
   private final String nums = "0123456789";
   private int selectX = 4;
   private int selectY = 4;
   private int moveIndex = 0;
   private Vector puzzleMoves = new Vector();
   private String puzzleData;
+  private String modeLabel;
+  private int[] gameBoard = new int[81];
+  private boolean[] ticks = new boolean[81 * 9];
   private String highlight = "";
   private String selected = "";
+  private boolean usingPen = true;
 
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
@@ -66,12 +71,11 @@ public class SudokuJ2ME extends MIDlet {
         }
       }
       Random random = new Random();
-      int index = random.nextInt(puzzles.length + 1);
+      int index = random.nextInt(puzzles.length);
       return puzzles[index];
     } catch (Exception e) {}
     return null;
   }
-
 
 /*
  * Main Canvas
@@ -119,7 +123,7 @@ public class SudokuJ2ME extends MIDlet {
       } else if (key.equals("SOFT1")) {
         // menu
       } else if (key.equals("SOFT2")) {
-        // back
+        usingPen = usingPen ? false : true;
       } else if (key.equals("UP")) {
         selectY = (selectY <= 0) ? 8 : --selectY;
       } else if (key.equals("DOWN")) {
@@ -133,18 +137,30 @@ public class SudokuJ2ME extends MIDlet {
       } else if (key.equals("#")) {
         if (moveIndex + 1 < puzzleMoves.size()) ++moveIndex;
       } else if (nums.indexOf(key) != -1) {
+        int value = keyCode - 48;
         if (selection) {
           int index = selectY * 9 + selectX;
-          String newMove = lastMove().substring(0, index) + key + lastMove().substring(index + 1);
-          if (puzzleMoves.size() > moveIndex + 1) puzzleMoves.setSize(moveIndex + 1);
-          puzzleMoves.addElement(newMove);
-          moveIndex++;
+          enterValue(index, true, value);
         } else {
           highlight = highlight.equals(key) ? "" : key;
         }
       }
       if (!(key.equals("SELECT"))) selection = false;
       this.repaint();
+    }
+
+    public void enterValue(int cell, boolean pen, int value) {
+      // * apply change to board (or ticks when !pen)
+      // * add entry to RMS and bump moveIndex
+      if (usingPen) {
+        String newMove = lastMove().substring(0, cell) + String.valueOf(value) + lastMove().substring(cell + 1);
+        if (puzzleMoves.size() > moveIndex + 1) puzzleMoves.setSize(moveIndex + 1);
+        puzzleMoves.addElement(newMove);
+        moveIndex++;
+      } else {
+        int tickIndex = cell * 9 + value - 1;
+        ticks[tickIndex] = ticks[tickIndex] ? false : true;
+      }
     }
 
     public String lastMove() {
@@ -157,6 +173,11 @@ public class SudokuJ2ME extends MIDlet {
       g.fillRect(0, 0, width, height);
       selected = puzzleData.substring(selectY * 9 + selectX, selectY * 9 + selectX + 1);
 
+      g.setFont(largeFont);
+      modeLabel = (usingPen ? "Pen" : "Pencil");
+      g.setColor(usingPen ? GREEN : SALMON);
+      g.drawString(modeLabel, width - padding, height - padding, Graphics.RIGHT | Graphics.BOTTOM);
+
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
         g.setColor(((i == 3) || (i == 6)) ? (selection ? GRAY : CYAN) : (selection ? DARK : BLUE));
@@ -164,18 +185,22 @@ public class SudokuJ2ME extends MIDlet {
         g.drawLine(offset + margin, margin + 1, offset + margin, boardSize + margin - 1);
       }
 
-      for (int i = 0; i < thisData.length(); i++) {
+      for (int i = 0; i < thisData.length() - 1; i++) {
         String s = thisData.substring(i, i + 1);
         boolean userMove = puzzleData.substring(i, i + 1).equals(".");
         int thisX = i % 9;
         int thisY = i / 9;
         if ((thisX == selectX) && (thisY == selectY)) {
-          g.setColor(selection ? GREEN : WHITE);
+          g.setColor(selection ? (usingPen ? GREEN : SALMON) : WHITE);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
           g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + margin - 1, cellSize + 2, cellSize + 2);
-        } else if (s.equals(highlight) && !s.equals(".")) {
+        } else if (s.equals(highlight)) {
+          //if (!s.equals(".")) {
           g.setColor(YELLOW);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
+          // } else if (ticks[i * 9 + Integer.parseInt(highlight) - 1]) {
+          // g.setColor(SALMON);
+          // g.fillRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
         }
         if (!s.equals(".")) {
           g.setColor(s.equals(highlight) ? YELLOW : (userMove ? WHITE : (selection ? GRAY : CYAN)));
