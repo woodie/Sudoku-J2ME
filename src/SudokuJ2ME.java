@@ -163,7 +163,7 @@ public class SudokuJ2ME extends MIDlet {
     }
 
     public void drawTick(Graphics g, int cx, int cy, int value) {
-      g.fillRect(cx + 5 + ((value - 1) % 3 * 7), cy + 3 + ((value - 1) / 3 * 8), 3, 5);
+      g.fillRect(cx + 4 + ((value - 1) % 3 * 7), cy + 4 + ((value - 1) / 3 * 7), 5, 5);
     }
 
     public void paint(Graphics g) {
@@ -173,7 +173,7 @@ public class SudokuJ2ME extends MIDlet {
       locked = puzzleData[selectY * 9 + selectX];
 
       g.setFont(largeFont);
-      modeLabel = (usingPen ? "Value" : "Ticks");
+      modeLabel = (usingPen ? "Pen" : "Pencil");
       g.setColor(usingPen ? WHITE : YELLOW);
       g.drawString(modeLabel, width - padding, height - padding, Graphics.RIGHT | Graphics.BOTTOM);
  
@@ -201,18 +201,16 @@ public class SudokuJ2ME extends MIDlet {
             }
           }
         }
-        // Cell border
+        // Highlight border
         if ((thisValue == highlight) || ((highlight > -1) && (ticks[i * 9 + highlight - 1]))) {
           g.setColor(YELLOW);
           g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
         }
-        if ((thisX == selectX) && (thisY == selectY)) {
-          g.setColor(selection ? (usingPen ? GREEN : SALMON) : WHITE);
-          g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
-          g.drawRect(cellSize * thisX + margin - 1, cellSize * thisY + margin - 1, cellSize + 2, cellSize + 2);
-        }
       }
-
+      // Selection border
+      g.setColor(selection ? (usingPen ? GREEN : SALMON) : WHITE);
+      g.drawRect(cellSize * selectX + margin, cellSize * selectY + margin, cellSize, cellSize);
+      g.drawRect(cellSize * selectX + margin - 1, cellSize * selectY + margin - 1, cellSize + 2, cellSize + 2);
     }
   }
 }
