@@ -172,7 +172,7 @@ public class SudokuJ2ME extends MIDlet {
             }
           }
         }
-      } else {
+      } else if (selected == 0) {
         int tickIndex = cell * 9 + value - 1;
         ticks[tickIndex] = ticks[tickIndex] ? false : true;
       }
