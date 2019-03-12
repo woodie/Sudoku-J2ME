@@ -26,9 +26,11 @@ public class SudokuJ2ME extends MIDlet {
   private final int CYAN = 0x00AAFF;
   private final int BLUE = 0x000088;
   private final int GREEN = 0x88FF00;
+  private final int FOREST = 0x009900;
   private final int YELLOW = 0xFFFF00;
   private final int SALMON = 0xFF8888;
-  private final int CRIMSON = 0x88000;
+  private final int CRIMSON = 0x880000;
+  private final int MUSTARD = 0x999900;
   private int selectX = 4;
   private int selectY = 4;
   private String modeLabel;
@@ -88,7 +90,6 @@ public class SudokuJ2ME extends MIDlet {
   class MainCanvas extends Canvas {
     private final long SECOND = 1000;
     private SudokuJ2ME parent = null;
-    boolean selection;
 
     public MainCanvas(SudokuJ2ME parent) {
       this.parent = parent;
@@ -122,7 +123,11 @@ public class SudokuJ2ME extends MIDlet {
         if (locked) {
           highlight = (highlight == selected) ? -1 : selected;
         } else {
-          selection = (selection) ? false : true;
+          if (highlight > 0) {
+            int index = selectY * 9 + selectX;
+            int entry = (highlight == selected) ? 0 : highlight;
+            enterValue(index, true, entry);
+          }
         }
       } else if (key.equals("SOFT1")) {
         // menu
@@ -141,21 +146,32 @@ public class SudokuJ2ME extends MIDlet {
       } else if (key.equals("#")) {
         // redo
       } else if ((value > 0) && (value < 10)) {
-        if (selection) {
-          int index = selectY * 9 + selectX;
-          int entry = (value == selected) ? 0 : value;
-          enterValue(index, true, entry);
-        } else {
-          highlight = (highlight == value) ? -1 : value;
-        }
+        highlight = (highlight == value) ? -1 : value;
       }
-      if (!(key.equals("SELECT"))) selection = false;
       this.repaint();
     }
 
     public void enterValue(int cell, boolean pen, int value) {
       if (usingPen) {
         gameBoard[cell] = value;
+        // cleanup tick marks
+        if (value > 0) {
+          int myX = cell % 9;
+          int myY = cell / 9;
+          int houseX = (myX / 3) * 3;
+          int houseY = (myY / 3) * 3;
+          for (int i = 0; i < 81; i++) {
+            if (i == cell) {
+              for (int t = 1; t < 10; t++) {
+                ticks[i * 9 + t - 1] = false;
+              }
+            } else if (((i >= myY * 9) && (i < myY * 9 + 9)) || (i % 9 == myX) ||
+                ((i % 9 >= houseX) && (i % 9 < houseX + 3) &&
+                (i / 9 >= houseY) && (i / 9 < houseY + 3))) {
+              ticks[i * 9 + value - 1] = false;
+            }
+          }
+        }
       } else {
         int tickIndex = cell * 9 + value - 1;
         ticks[tickIndex] = ticks[tickIndex] ? false : true;
@@ -174,41 +190,42 @@ public class SudokuJ2ME extends MIDlet {
 
       g.setFont(largeFont);
       modeLabel = (usingPen ? "Pen" : "Pencil");
-      g.setColor(usingPen ? WHITE : YELLOW);
+      g.setColor(usingPen ? GREEN : SALMON);
       g.drawString(modeLabel, width - padding, height - padding, Graphics.RIGHT | Graphics.BOTTOM);
- 
+
       // Draw lines on board
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
-        g.setColor(((i == 3) || (i == 6)) ? (selection ? GRAY : CYAN) : (selection ? DARK : BLUE));
+        g.setColor(((i == 3) || (i == 6)) ? WHITE : DARK);
         g.drawLine(margin + 1, offset + margin, boardSize + margin - 1, offset + margin);
         g.drawLine(offset + margin, margin + 1, offset + margin, boardSize + margin - 1);
       }
 
-      for (int i = 0; i < gameBoard.length; i++) { 
+      for (int i = 0; i < gameBoard.length; i++) {
         int thisValue = gameBoard[i];
         int thisX = i % 9;
         int thisY = i / 9;
+        // Highlight border
+        if ((thisValue == highlight) || ((highlight > -1) && (ticks[i * 9 + highlight - 1]))) {
+          g.setColor((thisValue == highlight) ? FOREST : CRIMSON);
+          g.fillRect(cellSize * thisX + margin + 1, cellSize * thisY + margin + 1, cellSize - 1, cellSize - 1);
+        }
         // Cell content
         if (thisValue != 0) {
-          g.setColor((thisValue == highlight) ? YELLOW : (puzzleData[i] ? (selection ? GRAY : CYAN) : WHITE));
+          g.setColor((thisValue == highlight) ? WHITE : (puzzleData[i] ? CYAN : WHITE));
+          specialFont.numbersImage = (thisValue == highlight) ? specialFont.numbersG : specialFont.numbersK;
           specialFont.numbers(g, String.valueOf(thisValue), cellSize * thisX + margin + 7, cellSize * thisY + margin + 3);
         } else {
           for (int t = 1; t < 10; t++) {
             if (ticks[i * 9 + t - 1]) {
-              g.setColor((t == highlight) ? YELLOW : GRAY);
+              g.setColor((t == highlight) ? WHITE : GRAY);
               drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
             }
           }
         }
-        // Highlight border
-        if ((thisValue == highlight) || ((highlight > -1) && (ticks[i * 9 + highlight - 1]))) {
-          g.setColor(YELLOW);
-          g.drawRect(cellSize * thisX + margin, cellSize * thisY + margin, cellSize, cellSize);
-        }
       }
       // Selection border
-      g.setColor(selection ? (usingPen ? GREEN : SALMON) : WHITE);
+      g.setColor(usingPen ? GREEN : SALMON);
       g.drawRect(cellSize * selectX + margin, cellSize * selectY + margin, cellSize, cellSize);
       g.drawRect(cellSize * selectX + margin - 1, cellSize * selectY + margin - 1, cellSize + 2, cellSize + 2);
     }
