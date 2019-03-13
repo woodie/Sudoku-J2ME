@@ -22,14 +22,15 @@ public class SudokuJ2ME extends MIDlet {
   private final int BLACK = 0x000000;
   private final int WHITE = 0xFFFFFF;
   private final int DARK = 0x333333;
+  private final int THIN = 0x555555;
   private final int GRAY = 0x888888;
   private final int CYAN = 0x00AAFF;
   private final int BLUE = 0x000088;
   private final int GREEN = 0x88FF00;
   private final int FOREST = 0x009900;
   private final int YELLOW = 0xFFFF00;
-  private final int SALMON = 0xFF8888;
-  private final int CRIMSON = 0x880000;
+  private final int SALMON = 0xFF6666;
+  private final int CRIMSON = 0x770000;
   private final int MUSTARD = 0x999900;
   private int selectX = 4;
   private int selectY = 4;
@@ -189,14 +190,15 @@ public class SudokuJ2ME extends MIDlet {
       locked = puzzleData[selectY * 9 + selectX];
 
       g.setFont(largeFont);
+      g.setColor(WHITE);
       modeLabel = (usingPen ? "Pen" : "Pencil");
-      g.setColor(usingPen ? GREEN : SALMON);
       g.drawString(modeLabel, width - padding, height - padding, Graphics.RIGHT | Graphics.BOTTOM);
+      g.drawString("Menu", padding, height - padding, Graphics.LEFT | Graphics.BOTTOM);
 
       // Draw lines on board
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
-        g.setColor(((i == 3) || (i == 6)) ? WHITE : DARK);
+        g.setColor(((i == 3) || (i == 6)) ? WHITE : THIN);
         g.drawLine(margin + 1, offset + margin, boardSize + margin - 1, offset + margin);
         g.drawLine(offset + margin, margin + 1, offset + margin, boardSize + margin - 1);
       }
@@ -225,9 +227,19 @@ public class SudokuJ2ME extends MIDlet {
         }
       }
       // Selection border
-      g.setColor(usingPen ? GREEN : SALMON);
+      g.setColor(highlight > 0 ? (usingPen ? GREEN : SALMON) : GRAY);
       g.drawRect(cellSize * selectX + margin, cellSize * selectY + margin, cellSize, cellSize);
       g.drawRect(cellSize * selectX + margin - 1, cellSize * selectY + margin - 1, cellSize + 2, cellSize + 2);
+
+      g.setFont(largeFont);
+      specialFont.numbersImage = specialFont.numbersK;
+      for (int n = 1; n < 10; n++) {
+        g.setColor(((highlight == n) && (!usingPen)) ? SALMON : GRAY);
+        g.drawString(String.valueOf(n), 20 * n + 20, height - 75, Graphics.HCENTER | Graphics.TOP);
+        g.setColor(((highlight == n) && (usingPen)) ? GREEN : GRAY);
+        specialFont.numbers(g, String.valueOf(n), 20 * n + 13, height - 50);
+      }
     }
+
   }
 }
