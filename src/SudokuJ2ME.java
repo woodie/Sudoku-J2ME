@@ -31,7 +31,7 @@ public class SudokuJ2ME extends MIDlet {
   private final int YELLOW = 0xFFFF00;
   private final int SALMON = 0xFF6666;
   private final int CRIMSON = 0x770000;
-  private final int MUSTARD = 0x999900;
+  private final int MUSTARD = 0x555500;
   private int selectX = 4;
   private int selectY = 4;
   private String modeLabel;
@@ -209,7 +209,7 @@ public class SudokuJ2ME extends MIDlet {
         int thisY = i / 9;
         // Highlight border
         if ((thisValue == highlight) || ((highlight > -1) && (ticks[i * 9 + highlight - 1]))) {
-          g.setColor((thisValue == highlight) ? FOREST : CRIMSON);
+          g.setColor((thisValue == highlight) ? FOREST : MUSTARD);
           g.fillRect(cellSize * thisX + margin + 1, cellSize * thisY + margin + 1, cellSize - 1, cellSize - 1);
         }
         // Cell content
@@ -227,15 +227,16 @@ public class SudokuJ2ME extends MIDlet {
         }
       }
       // Selection border
-      g.setColor(highlight > 0 ? (usingPen ? GREEN : SALMON) : GRAY);
+      g.setColor(highlight > 0 ? (usingPen ? GREEN : YELLOW) : GRAY);
       g.drawRect(cellSize * selectX + margin, cellSize * selectY + margin, cellSize, cellSize);
       g.drawRect(cellSize * selectX + margin - 1, cellSize * selectY + margin - 1, cellSize + 2, cellSize + 2);
 
       g.setFont(largeFont);
       specialFont.numbersImage = specialFont.numbersK;
       for (int n = 1; n < 10; n++) {
-        g.setColor(((highlight == n) && (!usingPen)) ? SALMON : GRAY);
-        g.drawString(String.valueOf(n), 20 * n + 20, height - 75, Graphics.HCENTER | Graphics.TOP);
+        g.setColor(((highlight == n) && (!usingPen)) ? YELLOW : GRAY);
+        g.drawString(String.valueOf(n), 20 * n + 21, height - 75, Graphics.HCENTER | Graphics.TOP);
+        g.drawString(String.valueOf(n), 20 * n + 22, height - 75, Graphics.HCENTER | Graphics.TOP);
         g.setColor(((highlight == n) && (usingPen)) ? GREEN : GRAY);
         specialFont.numbers(g, String.valueOf(n), 20 * n + 13, height - 50);
       }
