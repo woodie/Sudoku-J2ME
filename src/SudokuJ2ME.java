@@ -1,6 +1,3 @@
-import java.io.*;
-import java.util.Random;
-import java.util.Vector;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
 
@@ -12,6 +9,7 @@ public class SudokuJ2ME extends MIDlet {
   private MainCanvas mainCanvas = null;
   private int width;
   private int height;
+  private Puzzle puzzle;
   private SpecialFont specialFont = new SpecialFont();
   private Font smallFont = Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_MEDIUM);
   private Font largeFont = Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_LARGE);
@@ -35,9 +33,9 @@ public class SudokuJ2ME extends MIDlet {
   private int selectX = 4;
   private int selectY = 4;
   private String modeLabel;
-  private int[] gameBoard = new int[81];
-  private boolean[] puzzleData = new boolean[81];
-  private boolean[] ticks = new boolean[81 * 9];
+  private int[] gameBoard;
+  private boolean[] puzzleData;
+  private boolean[] ticks;
   private int highlight = -1;
   private int selected = -1;
   private boolean usingPen = true;
@@ -46,7 +44,10 @@ public class SudokuJ2ME extends MIDlet {
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
     mainCanvas = new MainCanvas(this);
-    loadData();
+    puzzle = new Puzzle();
+    ticks = puzzle.ticks;
+    gameBoard = puzzle.gameBoard;
+    puzzleData = puzzle.puzzleData;
   }
 
   public void startApp() throws MIDletStateChangeException {
@@ -57,33 +58,6 @@ public class SudokuJ2ME extends MIDlet {
 
   protected void destroyApp(boolean unconditional)
       throws MIDletStateChangeException {}
-
-  private void loadData() {
-    Random random = new Random();
-    int puzzle = random.nextInt(19);
-    InputStream is = getClass().getResourceAsStream("puzzles_easy.txt");
-    int n = 0;
-    int i = 0;
-    int chars = 0;
-    try {
-      while ((chars = is.read()) != -1) {
-        char c = (char) chars;
-        if (c == '\n') {
-          n++;
-        } else {
-          if (n == puzzle) {
-            if (c == '.') {
-              gameBoard[i] = 0;
-            } else {
-              gameBoard[i] = c - 48;
-              puzzleData[i] = true;
-            }
-            i++;
-          }
-        }
-      }
-    } catch (Exception e) {}
-  }
 
  /*
   * Main Canvas
@@ -127,7 +101,11 @@ public class SudokuJ2ME extends MIDlet {
           if (highlight > 0) {
             int index = selectY * 9 + selectX;
             int entry = (highlight == selected) ? 0 : highlight;
-            enterValue(index, true, entry);
+            if (usingPen) {
+              puzzle.penValue(index, entry);
+            } else if (selected == 0) {
+              puzzle.pencilValue(index, entry);
+            }
           }
         }
       } else if (key.equals("SOFT1")) {
@@ -152,33 +130,6 @@ public class SudokuJ2ME extends MIDlet {
       this.repaint();
     }
 
-    public void enterValue(int cell, boolean pen, int value) {
-      if (usingPen) {
-        gameBoard[cell] = value;
-        // cleanup tick marks
-        if (value > 0) {
-          int myX = cell % 9;
-          int myY = cell / 9;
-          int houseX = (myX / 3) * 3;
-          int houseY = (myY / 3) * 3;
-          for (int i = 0; i < 81; i++) {
-            if (i == cell) {
-              for (int t = 1; t < 10; t++) {
-                ticks[i * 9 + t - 1] = false;
-              }
-            } else if (((i >= myY * 9) && (i < myY * 9 + 9)) || (i % 9 == myX) ||
-                ((i % 9 >= houseX) && (i % 9 < houseX + 3) &&
-                (i / 9 >= houseY) && (i / 9 < houseY + 3))) {
-              ticks[i * 9 + value - 1] = false;
-            }
-          }
-        }
-      } else if (selected == 0) {
-        int tickIndex = cell * 9 + value - 1;
-        ticks[tickIndex] = ticks[tickIndex] ? false : true;
-      }
-    }
-
     public void drawTick(Graphics g, int cx, int cy, int value) {
       g.fillRect(cx + 4 + ((value - 1) % 3 * 7), cy + 4 + ((value - 1) / 3 * 7), 5, 5);
     }
@@ -189,7 +140,7 @@ public class SudokuJ2ME extends MIDlet {
       selected = gameBoard[selectY * 9 + selectX];
       locked = puzzleData[selectY * 9 + selectX];
 
-      g.setFont(largeFont);
+      g.setFont(smallFont);
       g.setColor(WHITE);
       modeLabel = (usingPen ? "Pen" : "Pencil");
       g.drawString(modeLabel, width - padding, height - padding, Graphics.RIGHT | Graphics.BOTTOM);
@@ -231,14 +182,14 @@ public class SudokuJ2ME extends MIDlet {
       g.drawRect(cellSize * selectX + margin, cellSize * selectY + margin, cellSize, cellSize);
       g.drawRect(cellSize * selectX + margin - 1, cellSize * selectY + margin - 1, cellSize + 2, cellSize + 2);
 
-      g.setFont(largeFont);
+      g.setFont(smallFont);
       specialFont.numbersImage = specialFont.numbersK;
       for (int n = 1; n < 10; n++) {
         g.setColor(((highlight == n) && (!usingPen)) ? YELLOW : GRAY);
-        g.drawString(String.valueOf(n), 20 * n + 21, height - 75, Graphics.HCENTER | Graphics.TOP);
-        g.drawString(String.valueOf(n), 20 * n + 22, height - 75, Graphics.HCENTER | Graphics.TOP);
+        g.drawString(String.valueOf(n), 20 * n + 21, height - 72, Graphics.HCENTER | Graphics.TOP);
+        g.drawString(String.valueOf(n), 20 * n + 22, height - 72, Graphics.HCENTER | Graphics.TOP);
         g.setColor(((highlight == n) && (usingPen)) ? GREEN : GRAY);
-        specialFont.numbers(g, String.valueOf(n), 20 * n + 13, height - 50);
+        specialFont.numbers(g, String.valueOf(n), 20 * n + 13, height - 52);
       }
     }
 
