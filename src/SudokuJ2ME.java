@@ -48,13 +48,15 @@ public class SudokuJ2ME extends MIDlet {
 
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
-    puzzle = new Puzzle(0, -1);
     menuCanvas = new MenuCanvas(this);
     pickCanvas = new PickCanvas(this);
     mainCanvas = new MainCanvas(this);
   }
 
   public void startApp() throws MIDletStateChangeException {
+    // in-progress puzzle... or null
+    puzzle = new Puzzle(-1, -1);
+    // when null, show pickCanvas
     display.setCurrent(mainCanvas);
   }
 
@@ -165,7 +167,7 @@ public class SudokuJ2ME extends MIDlet {
   class PickCanvas extends Canvas {
     private SudokuJ2ME parent = null;
     private int menuSelection = 0;
-    private String[] menuItems = puzzle.levels;
+    private String[] menuItems = Puzzle.levels;
 
     public PickCanvas(SudokuJ2ME parent) {
       this.parent = parent;
@@ -204,7 +206,7 @@ public class SudokuJ2ME extends MIDlet {
       } else if (key.equals("SOFT1")) {
         // no op
       } else if (key.equals("SOFT2")) {
-        display.setCurrent(mainCanvas);
+        // no op
       }
 
       switch(getGameAction(keyCode)) {

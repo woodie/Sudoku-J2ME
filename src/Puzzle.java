@@ -11,26 +11,18 @@ public class Puzzle {
   public boolean[] pencilMarks;
   public int[] gameBoard;
   public boolean[] puzzleData;
-  public final String[] levels = {"Simple", "Easy", "Intermediate", "Expert"};
-
-  //openRecStore();
-  //loadMoves();
-  //closeRecStore();
-
-  // 1st (game, puzzle, difficuly) 2, 0-19, 0-3
-  // 2nd (pen,    cell, value)     1, 0-80, 1-9
-  // 3rd (pencil, cell, value)     0, 0-80, 1-9
+  public static final String[] levels = {"Simple", "Easy", "Intermediate", "Expert"};
 
   public Puzzle(int level, int puzzle) {
     pencilMarks = new boolean[81 * 9];
     gameBoard = new int[81];
     puzzleData = new boolean[81];
     Random random = new Random();
-    if ((level < 0) || (level > levels.length)) level = 1;
+    if ((level < 0) || (level > Puzzle.levels.length)) level = 1;
     if ((puzzle < 0) || (puzzle > 18)) puzzle = random.nextInt(19);
     StringBuffer buf = new StringBuffer(24);
     buf.append("Puzzles_");
-    buf.append(levels[level]);
+    buf.append(Puzzle.levels[level]);
     buf.append(".txt");
     InputStream is = getClass().getResourceAsStream(buf.toString());
     int n = 0;
@@ -83,6 +75,15 @@ public class Puzzle {
     pencilMarks[tickIndex] = pencilMarks[tickIndex] ? false : true;
   }
 
+  // 1st (game, puzzle, difficuly) 2, 0-19, 0-3
+  // 2nd (pen,    cell, value)     1, 0-80, 1-9
+  // 3rd (pencil, cell, value)     0, 0-80, 1-9
+
+  //openRecStore();
+  //loadMoves();
+  //closeRecStore();
+
+
 
   public byte[] toByteArray(int value) {
     return new byte[] { (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)value };
@@ -90,6 +91,25 @@ public class Puzzle {
 
   public int fromByteArray(byte[] bytes) {
     return bytes[0] << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF);
+  }
+
+  public void saveMoves(int[] values) {
+    for (int i = 0; i < values.length; i++) {
+      byte[] rec = toByteArray(values[i]);
+      try {
+        rs.addRecord(rec, 0, rec.length);
+      } catch (Exception e) {}
+    }
+  }
+
+  public void loadMoves(){
+    try{
+      byte[] recData = new byte[LENGTH];
+      for(int i = 1; i <= rs.getNumRecords(); i++){
+        rs.getRecord(i, recData, 0);
+        // enter moves = fromByteArray(recData);
+      }
+    } catch (Exception e){}
   }
 
   public void openRecStore() {
@@ -110,25 +130,6 @@ public class Puzzle {
         RecordStore.deleteRecordStore(REC_STORE);
       } catch (Exception e) {}
     }
-  }
-
-  public void saveMoves(int[] values) {
-    for (int i = 0; i < values.length; i++) {
-      byte[] rec = toByteArray(values[i]);
-      try {
-        rs.addRecord(rec, 0, rec.length);
-      } catch (Exception e) {}
-    }
-  }
-
-  public void loadMoves(){
-    try{
-      byte[] recData = new byte[LENGTH];
-      for(int i = 1; i <= rs.getNumRecords(); i++){
-        rs.getRecord(i, recData, 0);
-        // enter moves = fromByteArray(recData);
-      }
-    } catch (Exception e){}
   }
 
 }
