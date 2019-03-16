@@ -6,6 +6,8 @@ import javax.microedition.midlet.*;
  */
 public class SudokuJ2ME extends MIDlet {
   private Display display = null;
+  private MenuCanvas menuCanvas = null;
+  private PickCanvas pickCanvas = null;
   private MainCanvas mainCanvas = null;
   private int width;
   private int height;
@@ -19,6 +21,11 @@ public class SudokuJ2ME extends MIDlet {
   private final int boardSize = cellSize * 9;
   private final int BLACK = 0x000000;
   private final int WHITE = 0xFFFFFF;
+  private final int GR86 = 0xDDDDDD;
+  private final int GR80 = 0xCCCCCC;
+  private final int GR40 = 0x666666;
+  private final int GR26 = 0x444444;
+  private final int GR20 = 0x333333;
   private final int DARK = 0x333333;
   private final int THIN = 0x555555;
   private final int GRAY = 0x888888;
@@ -33,21 +40,18 @@ public class SudokuJ2ME extends MIDlet {
   private int selectX = 4;
   private int selectY = 4;
   private String modeLabel;
-  private int[] gameBoard;
-  private boolean[] puzzleData;
-  private boolean[] ticks;
   private int highlight = -1;
   private int selected = -1;
   private boolean usingPen = true;
   private boolean locked = true;
+  private final int cbarHeight = 38;
 
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
+    puzzle = new Puzzle(0, -1);
+    menuCanvas = new MenuCanvas(this);
+    pickCanvas = new PickCanvas(this);
     mainCanvas = new MainCanvas(this);
-    puzzle = new Puzzle();
-    ticks = puzzle.ticks;
-    gameBoard = puzzle.gameBoard;
-    puzzleData = puzzle.puzzleData;
   }
 
   public void startApp() throws MIDletStateChangeException {
@@ -58,6 +62,194 @@ public class SudokuJ2ME extends MIDlet {
 
   protected void destroyApp(boolean unconditional)
       throws MIDletStateChangeException {}
+
+ /**
+  * Menu Canvas
+  */
+  class MenuCanvas extends Canvas {
+    private SudokuJ2ME parent = null;
+    private int menuSelection = 0;
+    private String[] menuItems = {"New Game", "Undo", "Redo", "About", "Exit"};
+
+    public MenuCanvas(SudokuJ2ME parent) {
+      this.parent = parent;
+      this.setFullScreenMode(true);
+      width = getWidth();
+      height = getHeight();
+    }
+
+    public void bailout() {
+      try {
+        destroyApp(true);
+        notifyDestroyed();
+      } catch (MIDletStateChangeException e) {
+        e.printStackTrace();
+      }
+    }
+
+    public void keyRepeated(int keyCode){
+      switch(getGameAction(keyCode)) {
+
+      case Canvas.UP:    // 2
+        menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
+        break;
+      case Canvas.DOWN:  // 8
+        menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
+        break;
+      }
+      this.repaint();
+    }
+
+    public void keyPressed(int keyCode){
+      String key = getKeyName(keyCode).toUpperCase();
+      if (key.equals("SELECT")) {
+        if (menuItems[menuSelection].equals("New Game")) {
+          display.setCurrent(pickCanvas);
+        } else if (menuItems[menuSelection].equals("Exit")) {
+          bailout();
+        } else {
+          display.setCurrent(mainCanvas);
+        }
+      } else if (key.equals("SOFT1")) {
+        // no op
+      } else if (key.equals("SOFT2")) {
+        display.setCurrent(mainCanvas);
+      }
+
+      switch(getGameAction(keyCode)) {
+
+      case Canvas.UP:    // 2
+        menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
+        break;
+      case Canvas.DOWN:  // 8
+        menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
+        break;
+      }
+      this.repaint();
+    }
+
+    public void paint(Graphics g) {
+      g.setColor(BLACK);
+      g.fillRect(0, 0, width, height);
+      int menuPadding = 6;
+      int menuLeading = 20;
+      int menuWidth = (menuPadding * 2) + largeFont.stringWidth("New Game");
+      int menuHeight = (menuPadding * 2) + (menuLeading * (menuItems.length)) - 2;
+      int menuTop = (height - menuHeight) / 2;
+      int menuLeft = (width - menuWidth) / 2;
+      int selectionWidth = menuWidth - 4;
+
+      g.setColor(GR20);
+      g.fillRect(menuLeft, menuTop, menuWidth, menuHeight);
+      g.setColor(WHITE);
+      g.drawRect(menuLeft, menuTop, menuWidth - 1, menuHeight - 1);
+      int topLine = menuTop + menuPadding;
+      for (int i = 0; i < menuItems.length; i++) {
+        if (menuSelection == i) {
+          g.setColor(BLACK);
+          g.fillRect(menuLeft + 2, topLine - 2, selectionWidth, menuLeading);
+        }
+        g.setFont(largeFont);
+        g.setColor((menuSelection == i) ? YELLOW : WHITE);
+        g.drawString(menuItems[i], width / 2, topLine, Graphics.HCENTER | Graphics.TOP);
+        g.setFont(largeFont);
+
+        topLine += menuLeading;
+      }
+    }
+  }
+
+ /**
+  * Pick Canvas
+  */
+  class PickCanvas extends Canvas {
+    private SudokuJ2ME parent = null;
+    private int menuSelection = 0;
+    private String[] menuItems = puzzle.levels;
+
+    public PickCanvas(SudokuJ2ME parent) {
+      this.parent = parent;
+      this.setFullScreenMode(true);
+      width = getWidth();
+      height = getHeight();
+    }
+
+    public void bailout() {
+      try {
+        destroyApp(true);
+        notifyDestroyed();
+      } catch (MIDletStateChangeException e) {
+        e.printStackTrace();
+      }
+    }
+
+    public void keyRepeated(int keyCode){
+      switch(getGameAction(keyCode)) {
+
+      case Canvas.UP:    // 2
+        menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
+        break;
+      case Canvas.DOWN:  // 8
+        menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
+        break;
+      }
+      this.repaint();
+    }
+
+    public void keyPressed(int keyCode){
+      String key = getKeyName(keyCode).toUpperCase();
+      if (key.equals("SELECT")) {
+        puzzle = new Puzzle(menuSelection, -1);
+        display.setCurrent(mainCanvas);
+      } else if (key.equals("SOFT1")) {
+        // no op
+      } else if (key.equals("SOFT2")) {
+        display.setCurrent(mainCanvas);
+      }
+
+      switch(getGameAction(keyCode)) {
+
+      case Canvas.UP:    // 2
+        menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
+        break;
+      case Canvas.DOWN:  // 8
+        menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
+        break;
+      }
+      this.repaint();
+    }
+
+    public void paint(Graphics g) {
+      g.setColor(BLACK);
+      g.fillRect(0, 0, width, height);
+      int menuPadding = 6;
+      int menuLeading = 20;
+      int menuWidth = (menuPadding * 2) + largeFont.stringWidth("Intermediate");
+      int menuHeight = (menuPadding * 2) + (menuLeading * (menuItems.length)) - 2;
+      int menuTop = (height - menuHeight) / 2;
+      int menuLeft = (width - menuWidth) / 2;
+      int selectionWidth = menuWidth - 4;
+
+      g.setColor(GR20);
+      g.fillRect(menuLeft, menuTop, menuWidth, menuHeight);
+      g.setColor(WHITE);
+      g.drawRect(menuLeft, menuTop, menuWidth - 1, menuHeight - 1);
+      int topLine = menuTop + menuPadding;
+      for (int i = 0; i < menuItems.length; i++) {
+        if (menuSelection == i) {
+          g.setColor(BLACK);
+          g.fillRect(menuLeft + 2, topLine - 2, selectionWidth, menuLeading);
+        }
+        g.setFont(largeFont);
+        g.setColor((menuSelection == i) ? YELLOW : WHITE);
+        g.drawString(menuItems[i], width / 2, topLine, Graphics.HCENTER | Graphics.TOP);
+        g.setFont(largeFont);
+
+        topLine += menuLeading;
+      }
+    }
+  }
+
 
  /*
   * Main Canvas
@@ -109,7 +301,7 @@ public class SudokuJ2ME extends MIDlet {
           }
         }
       } else if (key.equals("SOFT1")) {
-        // menu
+        display.setCurrent(menuCanvas);
       } else if (key.equals("SOFT2")) {
         usingPen = usingPen ? false : true;
       } else if (key.equals("UP")) {
@@ -137,8 +329,8 @@ public class SudokuJ2ME extends MIDlet {
     public void paint(Graphics g) {
       g.setColor(BLACK);
       g.fillRect(0, 0, width, height);
-      selected = gameBoard[selectY * 9 + selectX];
-      locked = puzzleData[selectY * 9 + selectX];
+      selected = puzzle.gameBoard[selectY * 9 + selectX];
+      locked = puzzle.puzzleData[selectY * 9 + selectX];
 
       g.setFont(smallFont);
       g.setColor(WHITE);
@@ -154,23 +346,23 @@ public class SudokuJ2ME extends MIDlet {
         g.drawLine(offset + margin, margin + 1, offset + margin, boardSize + margin - 1);
       }
 
-      for (int i = 0; i < gameBoard.length; i++) {
-        int thisValue = gameBoard[i];
+      for (int i = 0; i < puzzle.gameBoard.length; i++) {
+        int thisValue = puzzle.gameBoard[i];
         int thisX = i % 9;
         int thisY = i / 9;
         // Highlight border
-        if ((thisValue == highlight) || ((highlight > -1) && (ticks[i * 9 + highlight - 1]))) {
+        if ((thisValue == highlight) || ((highlight > -1) && (puzzle.ticks[i * 9 + highlight - 1]))) {
           g.setColor((thisValue == highlight) ? FOREST : MUSTARD);
           g.fillRect(cellSize * thisX + margin + 1, cellSize * thisY + margin + 1, cellSize - 1, cellSize - 1);
         }
         // Cell content
         if (thisValue != 0) {
-          g.setColor((thisValue == highlight) ? WHITE : (puzzleData[i] ? CYAN : WHITE));
+          g.setColor((thisValue == highlight) ? (puzzle.puzzleData[i] ? BLACK : WHITE) : (puzzle.puzzleData[i] ? CYAN : WHITE));
           specialFont.numbersImage = (thisValue == highlight) ? specialFont.numbersG : specialFont.numbersK;
           specialFont.numbers(g, String.valueOf(thisValue), cellSize * thisX + margin + 7, cellSize * thisY + margin + 3);
         } else {
           for (int t = 1; t < 10; t++) {
-            if (ticks[i * 9 + t - 1]) {
+            if (puzzle.ticks[i * 9 + t - 1]) {
               g.setColor((t == highlight) ? WHITE : GRAY);
               drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
             }

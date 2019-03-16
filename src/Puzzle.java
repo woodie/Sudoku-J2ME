@@ -5,29 +5,26 @@ import javax.microedition.rms.*;
 
 public class Puzzle {
   private RecordStore rs = null;
-  private static final int LENGTH = 4;
+  private static final int LENGTH = 3;
   private static final String REC_STORE = "Moves";
 
   public boolean[] ticks = new boolean[81 * 9];
   public int[] gameBoard = new int[81];
   public boolean[] puzzleData = new boolean[81];
-  private final String[] levels = {"simple", "easy", "intermediate", "expert"};
+  public final String[] levels = {"Simple", "Easy", "Intermediate", "Expert"};
 
-  public Puzzle() {
     //openRecStore();
     //loadMoves();
     //closeRecStore();
-    load(0, -1);
-  }
 
   // 1st (game, puzzle, difficuly) 2, 0-19, 0-3
   // 2nd (pen,    cell, value)     1, 0-80, 1-9
   // 3rd (pencil, cell, value)     0, 0-80, 1-9
 
-  private void load(int level, int puzzle) {
+  public Puzzle(int level, int puzzle) {
     Random random = new Random();
     if (puzzle == -1) puzzle = random.nextInt(19);
-    InputStream is = getClass().getResourceAsStream("puzzles_easy.txt");
+    InputStream is = getClass().getResourceAsStream("Puzzles_Easy.txt");
     int n = 0;
     int i = 0;
     int chars = 0;
