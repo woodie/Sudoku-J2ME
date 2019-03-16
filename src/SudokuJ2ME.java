@@ -351,7 +351,7 @@ public class SudokuJ2ME extends MIDlet {
         int thisX = i % 9;
         int thisY = i / 9;
         // Highlight border
-        if ((thisValue == highlight) || ((highlight > -1) && (puzzle.ticks[i * 9 + highlight - 1]))) {
+        if ((thisValue == highlight) || ((highlight > -1) && (puzzle.pencilMarks[i * 9 + highlight - 1]))) {
           g.setColor((thisValue == highlight) ? FOREST : MUSTARD);
           g.fillRect(cellSize * thisX + margin + 1, cellSize * thisY + margin + 1, cellSize - 1, cellSize - 1);
         }
@@ -362,7 +362,7 @@ public class SudokuJ2ME extends MIDlet {
           specialFont.numbers(g, String.valueOf(thisValue), cellSize * thisX + margin + 7, cellSize * thisY + margin + 3);
         } else {
           for (int t = 1; t < 10; t++) {
-            if (puzzle.ticks[i * 9 + t - 1]) {
+            if (puzzle.pencilMarks[i * 9 + t - 1]) {
               g.setColor((t == highlight) ? WHITE : GRAY);
               drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
             }

@@ -8,23 +8,31 @@ public class Puzzle {
   private static final int LENGTH = 3;
   private static final String REC_STORE = "Moves";
 
-  public boolean[] ticks = new boolean[81 * 9];
-  public int[] gameBoard = new int[81];
-  public boolean[] puzzleData = new boolean[81];
+  public boolean[] pencilMarks;
+  public int[] gameBoard;
+  public boolean[] puzzleData;
   public final String[] levels = {"Simple", "Easy", "Intermediate", "Expert"};
 
-    //openRecStore();
-    //loadMoves();
-    //closeRecStore();
+  //openRecStore();
+  //loadMoves();
+  //closeRecStore();
 
   // 1st (game, puzzle, difficuly) 2, 0-19, 0-3
   // 2nd (pen,    cell, value)     1, 0-80, 1-9
   // 3rd (pencil, cell, value)     0, 0-80, 1-9
 
   public Puzzle(int level, int puzzle) {
+    pencilMarks = new boolean[81 * 9];
+    gameBoard = new int[81];
+    puzzleData = new boolean[81];
     Random random = new Random();
-    if (puzzle == -1) puzzle = random.nextInt(19);
-    InputStream is = getClass().getResourceAsStream("Puzzles_Easy.txt");
+    if ((level < 0) || (level > levels.length)) level = 1;
+    if ((puzzle < 0) || (puzzle > 18)) puzzle = random.nextInt(19);
+    StringBuffer buf = new StringBuffer(24);
+    buf.append("Puzzles_");
+    buf.append(levels[level]);
+    buf.append(".txt");
+    InputStream is = getClass().getResourceAsStream(buf.toString());
     int n = 0;
     int i = 0;
     int chars = 0;
@@ -59,12 +67,12 @@ public class Puzzle {
       for (int i = 0; i < 81; i++) {
         if (i == cell) {
           for (int t = 1; t < 10; t++) {
-            ticks[i * 9 + t - 1] = false;
+            pencilMarks[i * 9 + t - 1] = false;
           }
         } else if (((i >= myY * 9) && (i < myY * 9 + 9)) || (i % 9 == myX) ||
             ((i % 9 >= houseX) && (i % 9 < houseX + 3) &&
             (i / 9 >= houseY) && (i / 9 < houseY + 3))) {
-          ticks[i * 9 + value - 1] = false;
+          pencilMarks[i * 9 + value - 1] = false;
         }
       }
     }
@@ -72,7 +80,7 @@ public class Puzzle {
 
   public void pencilValue(int cell, int value) {
     int tickIndex = cell * 9 + value - 1;
-    ticks[tickIndex] = ticks[tickIndex] ? false : true;
+    pencilMarks[tickIndex] = pencilMarks[tickIndex] ? false : true;
   }
 
 
