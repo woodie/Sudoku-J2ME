@@ -70,7 +70,7 @@ public class SudokuJ2ME extends MIDlet {
   class MenuCanvas extends Canvas {
     private SudokuJ2ME parent = null;
     private int menuSelection = 0;
-    private String[] menuItems = {"New Game", "Undo", "Redo", "About", "Exit"};
+    private String[] menuItems = {"New Game", "Undo", "Redo", "Auto Pencil", "About", "Exit"};
 
     public MenuCanvas(SudokuJ2ME parent) {
       this.parent = parent;
@@ -101,8 +101,11 @@ public class SudokuJ2ME extends MIDlet {
     public void keyPressed(int keyCode){
       keyLabel = getKeyName(keyCode).toUpperCase();
       if (keyLabel.equals("SELECT")) {
-        if (menuItems[menuSelection].equals(menuItems[0])) {
+        if (menuItems[menuSelection].equals("New Game")) {
           display.setCurrent(pickCanvas);
+        } else if (menuItems[menuSelection].equals("Auto Pencil")) {
+          puzzle.autoPencil();
+          display.setCurrent(mainCanvas);
         } else if (menuItems[menuSelection].equals("Exit")) {
           bailout();
         } else {
@@ -123,7 +126,7 @@ public class SudokuJ2ME extends MIDlet {
       g.fillRect(0, 0, width, height);
       int menuPadding = 6;
       int menuLeading = 20;
-      int menuWidth = (menuPadding * 2) + largeFont.stringWidth(menuItems[0]);
+      int menuWidth = (menuPadding * 2) + largeFont.stringWidth(menuItems[3]);
       int menuHeight = (menuPadding * 2) + (menuLeading * (menuItems.length)) - 2;
       int menuTop = (height - menuHeight) / 2;
       int menuLeft = (width - menuWidth) / 2;

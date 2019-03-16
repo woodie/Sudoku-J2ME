@@ -52,9 +52,17 @@ public class Puzzle {
     } catch (Exception e) {}
   }
 
+  public void pencilValue(int cell, int value) {
+    int tickIndex = cell * 9 + value - 1;
+    pencilMarks[tickIndex] = pencilMarks[tickIndex] ? false : true;
+  }
+
   public void penValue(int cell, int value) {
     gameBoard[cell] = value;
-    // cleanup tick marks
+    pencilCleanup(cell, value);
+  }
+
+  public void pencilCleanup(int cell, int value) {
     if (value > 0) {
       int myX = cell % 9;
       int myY = cell / 9;
@@ -74,9 +82,13 @@ public class Puzzle {
     }
   }
 
-  public void pencilValue(int cell, int value) {
-    int tickIndex = cell * 9 + value - 1;
-    pencilMarks[tickIndex] = pencilMarks[tickIndex] ? false : true;
+  public void autoPencil() {
+    for (int i = 0; i < pencilMarks.length; i++) {
+      pencilMarks[i] = true;
+    }
+    for (int i = 0; i < gameBoard.length; i++) {
+      if (gameBoard[i] != 0) pencilCleanup(i, gameBoard[i]);
+    }
   }
 
   // 1st (game, puzzle, difficuly) 2, 0-19, 0-3
