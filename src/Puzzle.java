@@ -13,6 +13,10 @@ public class Puzzle {
   public boolean[] puzzleData;
   public static final String[] levels = {"Simple", "Easy", "Intermediate", "Expert"};
 
+  public Puzzle() {
+    this(-1, -1);
+  }
+
   public Puzzle(int level, int puzzle) {
     pencilMarks = new boolean[81 * 9];
     gameBoard = new int[81];

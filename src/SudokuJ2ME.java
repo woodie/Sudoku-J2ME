@@ -11,7 +11,7 @@ public class SudokuJ2ME extends MIDlet {
   private MainCanvas mainCanvas = null;
   private int width;
   private int height;
-  private Puzzle puzzle;
+  private Puzzle puzzle = null;
   private SpecialFont specialFont = new SpecialFont();
   private Font smallFont = Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_MEDIUM);
   private Font largeFont = Font.getFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_LARGE);
@@ -39,6 +39,7 @@ public class SudokuJ2ME extends MIDlet {
   private final int MUSTARD = 0x555500;
   private int selectX = 4;
   private int selectY = 4;
+  private String keyLabel;
   private String modeLabel;
   private int highlight = -1;
   private int selected = -1;
@@ -51,12 +52,10 @@ public class SudokuJ2ME extends MIDlet {
     menuCanvas = new MenuCanvas(this);
     pickCanvas = new PickCanvas(this);
     mainCanvas = new MainCanvas(this);
+    puzzle = new Puzzle();
   }
 
   public void startApp() throws MIDletStateChangeException {
-    // in-progress puzzle... or null
-    puzzle = new Puzzle(-1, -1);
-    // when null, show pickCanvas
     display.setCurrent(mainCanvas);
   }
 
@@ -90,42 +89,31 @@ public class SudokuJ2ME extends MIDlet {
     }
 
     public void keyRepeated(int keyCode){
-      switch(getGameAction(keyCode)) {
-
-      case Canvas.UP:    // 2
+      keyLabel = getKeyName(keyCode).toUpperCase();
+      if (keyLabel.equals("UP")) {
         menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
-        break;
-      case Canvas.DOWN:  // 8
+      } else if (keyLabel.equals("DOWN")) {
         menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
-        break;
       }
       this.repaint();
     }
 
     public void keyPressed(int keyCode){
-      String key = getKeyName(keyCode).toUpperCase();
-      if (key.equals("SELECT")) {
-        if (menuItems[menuSelection].equals("New Game")) {
+      keyLabel = getKeyName(keyCode).toUpperCase();
+      if (keyLabel.equals("SELECT")) {
+        if (menuItems[menuSelection].equals(menuItems[0])) {
           display.setCurrent(pickCanvas);
         } else if (menuItems[menuSelection].equals("Exit")) {
           bailout();
         } else {
           display.setCurrent(mainCanvas);
         }
-      } else if (key.equals("SOFT1")) {
-        // no op
-      } else if (key.equals("SOFT2")) {
+      } else if (keyLabel.equals("SOFT2")) {
         display.setCurrent(mainCanvas);
-      }
-
-      switch(getGameAction(keyCode)) {
-
-      case Canvas.UP:    // 2
+      } else if (keyLabel.equals("UP")) {
         menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
-        break;
-      case Canvas.DOWN:  // 8
+      } else if (keyLabel.equals("DOWN")) {
         menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
-        break;
       }
       this.repaint();
     }
@@ -135,7 +123,7 @@ public class SudokuJ2ME extends MIDlet {
       g.fillRect(0, 0, width, height);
       int menuPadding = 6;
       int menuLeading = 20;
-      int menuWidth = (menuPadding * 2) + largeFont.stringWidth("New Game");
+      int menuWidth = (menuPadding * 2) + largeFont.stringWidth(menuItems[0]);
       int menuHeight = (menuPadding * 2) + (menuLeading * (menuItems.length)) - 2;
       int menuTop = (height - menuHeight) / 2;
       int menuLeft = (width - menuWidth) / 2;
@@ -186,37 +174,24 @@ public class SudokuJ2ME extends MIDlet {
     }
 
     public void keyRepeated(int keyCode){
-      switch(getGameAction(keyCode)) {
-
-      case Canvas.UP:    // 2
+      keyLabel = getKeyName(keyCode).toUpperCase();
+      if (keyLabel.equals("UP")) {
         menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
-        break;
-      case Canvas.DOWN:  // 8
+      } else if (keyLabel.equals("DOWN")) {
         menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
-        break;
       }
       this.repaint();
     }
 
     public void keyPressed(int keyCode){
-      String key = getKeyName(keyCode).toUpperCase();
-      if (key.equals("SELECT")) {
+      keyLabel = getKeyName(keyCode).toUpperCase();
+      if (keyLabel.equals("SELECT")) {
         puzzle = new Puzzle(menuSelection, -1);
         display.setCurrent(mainCanvas);
-      } else if (key.equals("SOFT1")) {
-        // no op
-      } else if (key.equals("SOFT2")) {
-        // no op
-      }
-
-      switch(getGameAction(keyCode)) {
-
-      case Canvas.UP:    // 2
+      } else if (keyLabel.equals("UP")) {
         menuSelection = (menuSelection == 0) ? menuItems.length - 1 : --menuSelection;
-        break;
-      case Canvas.DOWN:  // 8
+      } else if (keyLabel.equals("DOWN")) {
         menuSelection = (menuSelection == menuItems.length - 1) ? 0 : ++menuSelection;
-        break;
       }
       this.repaint();
     }
@@ -226,7 +201,7 @@ public class SudokuJ2ME extends MIDlet {
       g.fillRect(0, 0, width, height);
       int menuPadding = 6;
       int menuLeading = 20;
-      int menuWidth = (menuPadding * 2) + largeFont.stringWidth("Intermediate");
+      int menuWidth = (menuPadding * 2) + largeFont.stringWidth(menuItems[2]);
       int menuHeight = (menuPadding * 2) + (menuLeading * (menuItems.length)) - 2;
       int menuTop = (height - menuHeight) / 2;
       int menuLeft = (width - menuWidth) / 2;
@@ -268,18 +243,18 @@ public class SudokuJ2ME extends MIDlet {
     }
 
     public void keyRepeated(int keyCode){
-      String key = getKeyName(keyCode).toUpperCase();
-      if (key.equals("UP")) {
+      keyLabel = getKeyName(keyCode).toUpperCase();
+      if (keyLabel.equals("UP")) {
         selectY = (selectY <= 0) ? 8 : --selectY;
-      } else if (key.equals("DOWN")) {
+      } else if (keyLabel.equals("DOWN")) {
         selectY = (selectY >= 8) ? 0 : ++selectY;
-      } else if (key.equals("LEFT")) {
+      } else if (keyLabel.equals("LEFT")) {
         selectX = (selectX <= 0) ? 8 : --selectX;
-      } else if (key.equals("RIGHT")) {
+      } else if (keyLabel.equals("RIGHT")) {
         selectX = (selectX >= 8) ? 0 : ++selectX;
-      } else if (key.equals("*")) {
+      } else if (keyLabel.equals("*")) {
         // undo
-      } else if (key.equals("#")) {
+      } else if (keyLabel.equals("#")) {
         // redo
       }
       this.repaint();
@@ -287,8 +262,8 @@ public class SudokuJ2ME extends MIDlet {
 
     public void keyPressed(int keyCode){
       int value = keyCode - 48;
-      String key = getKeyName(keyCode).toUpperCase();
-      if (key.equals("SELECT")) {
+      keyLabel = getKeyName(keyCode).toUpperCase();
+      if (keyLabel.equals("SELECT")) {
         if (locked) {
           highlight = (highlight == selected) ? -1 : selected;
         } else {
@@ -302,21 +277,21 @@ public class SudokuJ2ME extends MIDlet {
             }
           }
         }
-      } else if (key.equals("SOFT1")) {
+      } else if (keyLabel.equals("SOFT1")) {
         display.setCurrent(menuCanvas);
-      } else if (key.equals("SOFT2")) {
+      } else if (keyLabel.equals("SOFT2")) {
         usingPen = usingPen ? false : true;
-      } else if (key.equals("UP")) {
+      } else if (keyLabel.equals("UP")) {
         selectY = (selectY <= 0) ? 8 : --selectY;
-      } else if (key.equals("DOWN")) {
+      } else if (keyLabel.equals("DOWN")) {
         selectY = (selectY >= 8) ? 0 : ++selectY;
-      } else if (key.equals("LEFT")) {
+      } else if (keyLabel.equals("LEFT")) {
         selectX = (selectX <= 0) ? 8 : --selectX;
-      } else if (key.equals("RIGHT")) {
+      } else if (keyLabel.equals("RIGHT")) {
         selectX = (selectX >= 8) ? 0 : ++selectX;
-      } else if (key.equals("*")) {
+      } else if (keyLabel.equals("*")) {
         // undo
-      } else if (key.equals("#")) {
+      } else if (keyLabel.equals("#")) {
         // redo
       } else if ((value > 0) && (value < 10)) {
         highlight = (highlight == value) ? -1 : value;
