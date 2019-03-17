@@ -47,6 +47,7 @@ public class SudokuJ2ME extends MIDlet {
   private boolean usingPen = true;
   private boolean locked = true;
   private final int cbarHeight = 38;
+  private int menuSelection = 0;
 
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
@@ -108,7 +109,6 @@ public class SudokuJ2ME extends MIDlet {
   */
   class MenuCanvas extends Canvas {
     private SudokuJ2ME parent = null;
-    private int menuSelection = 0;
     private String[] menuItems = {"New Game", "Undo Move", "Redo Move", "Auto Pencil", "About", "Exit"};
 
     public MenuCanvas(SudokuJ2ME parent) {
@@ -203,7 +203,6 @@ public class SudokuJ2ME extends MIDlet {
   */
   class PickCanvas extends Canvas {
     private SudokuJ2ME parent = null;
-    private int menuSelection = 0;
     private String[] menuItems = Puzzle.levels;
 
     public PickCanvas(SudokuJ2ME parent) {
@@ -276,7 +275,6 @@ public class SudokuJ2ME extends MIDlet {
     }
   }
 
-
  /*
   * Main Canvas
   */
@@ -327,6 +325,7 @@ public class SudokuJ2ME extends MIDlet {
           }
         }
       } else if (keyLabel.equals("SOFT1")) {
+        menuSelection = 0;
         display.setCurrent(menuCanvas);
       } else if (keyLabel.equals("SOFT2")) {
         usingPen = usingPen ? false : true;
