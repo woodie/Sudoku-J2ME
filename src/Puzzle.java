@@ -8,6 +8,7 @@ public class Puzzle {
   private static final int LENGTH = 3;
   private static final String REC_STORE = "Moves";
 
+  public String description;
   public boolean[] pencilMarks;
   public int[] gameBoard;
   public boolean[] puzzleData;
@@ -24,11 +25,16 @@ public class Puzzle {
     Random random = new Random();
     if ((level < 0) || (level > Puzzle.levels.length)) level = 1;
     if ((puzzle < 0) || (puzzle > 18)) puzzle = random.nextInt(19);
-    StringBuffer buf = new StringBuffer(24);
-    buf.append("Puzzles_");
-    buf.append(Puzzle.levels[level]);
-    buf.append(".txt");
-    InputStream is = getClass().getResourceAsStream(buf.toString());
+    StringBuffer sb = new StringBuffer(24);
+    sb.append(levels[level]);
+    sb.append(" #");
+    sb.append(String.valueOf(puzzle + 1));
+    description = sb.toString();
+    sb.delete(0, sb.length());
+    sb.append("Puzzles_");
+    sb.append(Puzzle.levels[level]);
+    sb.append(".txt");
+    InputStream is = getClass().getResourceAsStream(sb.toString());
     int n = 0;
     int i = 0;
     int chars = 0;

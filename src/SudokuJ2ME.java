@@ -6,6 +6,7 @@ import javax.microedition.midlet.*;
  */
 public class SudokuJ2ME extends MIDlet {
   private Display display = null;
+  private InfoCanvas infoCanvas = null;
   private MenuCanvas menuCanvas = null;
   private PickCanvas pickCanvas = null;
   private MainCanvas mainCanvas = null;
@@ -49,6 +50,7 @@ public class SudokuJ2ME extends MIDlet {
 
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
+    infoCanvas = new InfoCanvas(this);
     menuCanvas = new MenuCanvas(this);
     pickCanvas = new PickCanvas(this);
     mainCanvas = new MainCanvas(this);
@@ -64,13 +66,50 @@ public class SudokuJ2ME extends MIDlet {
   protected void destroyApp(boolean unconditional)
       throws MIDletStateChangeException {}
 
+ /*
+  * Info Canvas
+  */
+  class InfoCanvas extends Canvas {
+
+    public InfoCanvas(SudokuJ2ME parent) {
+      this.setFullScreenMode(true);
+    }
+
+    public void keyPressed(int keyCode){
+      if (getKeyName(keyCode).equals("SOFT2")) {
+        display.setCurrent(mainCanvas);
+      }
+    }
+
+    public void paint(Graphics g) {
+      g.setColor(BLACK);
+      g.fillRect(0, 0, width, height);
+
+      g.setFont(smallFont);
+      g.setColor(WHITE);
+      g.drawString("Back", width - padding, height, Graphics.RIGHT | Graphics.BOTTOM);
+
+      g.setColor(WHITE);
+      g.setFont(largeFont);
+      int position = 90;
+      StringBuffer sb = new StringBuffer();
+      sb.append("Version: ");
+      sb.append(getAppProperty("MIDlet-Version"));
+      String[] lines = {"Sudoku J2ME", "", "(c) 2019 John Woodell", "", sb.toString()};
+      for (int i = 0; i < lines.length; i++) {
+        position += 20;
+        g.drawString(lines[i], width / 2, position, Graphics.HCENTER | Graphics.TOP);
+      }
+    }
+  }
+
  /**
   * Menu Canvas
   */
   class MenuCanvas extends Canvas {
     private SudokuJ2ME parent = null;
     private int menuSelection = 0;
-    private String[] menuItems = {"New Game", "Undo", "Redo", "Auto Pencil", "About", "Exit"};
+    private String[] menuItems = {"New Game", "Undo Move", "Redo Move", "Auto Pencil", "About", "Exit"};
 
     public MenuCanvas(SudokuJ2ME parent) {
       this.parent = parent;
@@ -106,6 +145,8 @@ public class SudokuJ2ME extends MIDlet {
         } else if (menuItems[menuSelection].equals("Auto Pencil")) {
           puzzle.autoPencil();
           display.setCurrent(mainCanvas);
+        } else if (menuItems[menuSelection].equals("About")) {
+          display.setCurrent(infoCanvas);
         } else if (menuItems[menuSelection].equals("Exit")) {
           bailout();
         } else {
@@ -124,6 +165,11 @@ public class SudokuJ2ME extends MIDlet {
     public void paint(Graphics g) {
       g.setColor(BLACK);
       g.fillRect(0, 0, width, height);
+
+      g.setFont(smallFont);
+      g.setColor(WHITE);
+      g.drawString("Back", width - padding, height, Graphics.RIGHT | Graphics.BOTTOM);
+
       int menuPadding = 6;
       int menuLeading = 20;
       int menuWidth = (menuPadding * 2) + largeFont.stringWidth(menuItems[3]);
@@ -315,8 +361,9 @@ public class SudokuJ2ME extends MIDlet {
       g.setFont(smallFont);
       g.setColor(WHITE);
       modeLabel = (usingPen ? "Pen" : "Pencil");
-      g.drawString(modeLabel, width - padding, height - padding, Graphics.RIGHT | Graphics.BOTTOM);
-      g.drawString("Menu", padding, height - padding, Graphics.LEFT | Graphics.BOTTOM);
+      g.drawString(modeLabel, width - padding, height, Graphics.RIGHT | Graphics.BOTTOM);
+      g.drawString("Menu", padding, height, Graphics.LEFT | Graphics.BOTTOM);
+      g.drawString(puzzle.description, width / 2, height, Graphics.HCENTER | Graphics.BOTTOM);
 
       // Draw lines on board
       for (int i = 0; i < 10; i++) {
