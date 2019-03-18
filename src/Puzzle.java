@@ -27,12 +27,12 @@ public class Puzzle {
     if ((puzzle < 0) || (puzzle > 18)) puzzle = random.nextInt(19);
     StringBuffer sb = new StringBuffer(24);
     sb.append(levels[level]);
-    sb.append(" #");
+    sb.append(": ");
     sb.append(String.valueOf(puzzle + 1));
     description = sb.toString();
     sb.delete(0, sb.length());
-    sb.append("Puzzles_");
-    sb.append(Puzzle.levels[level]);
+    sb.append("puzzles_");
+    sb.append(Puzzle.levels[level].toLowerCase());
     sb.append(".txt");
     InputStream is = getClass().getResourceAsStream(sb.toString());
     int n = 0;
@@ -97,9 +97,9 @@ public class Puzzle {
     }
   }
 
-  // 1st (game, puzzle, difficuly) 2, 0-19, 0-3
-  // 2nd (pen,    cell, value)     1, 0-80, 1-9
-  // 3rd (pencil, cell, value)     0, 0-80, 1-9
+  // (puzzle, level, moves) 0-19, 0-3  0-255
+  //   (cell, value, pen)     0-80, 1-9, 1
+  //   (cell, value, pencil)  0-80, 1-9, 0
 
   //openRecStore();
   //loadMoves();
