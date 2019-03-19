@@ -19,17 +19,17 @@ public class SudokuJ2ME extends MIDlet {
   private final int cellSize = 26;
   private final int padding = 4;
   private final int margin = 2;
+  private final int spacer = 22;
   private final int boardSize = cellSize * 9;
   private final int BLACK = 0x000000;
   private final int WHITE = 0xFFFFFF;
   private final int GR86 = 0xDDDDDD;
   private final int GR80 = 0xCCCCCC;
+  private final int GR53 = 0x888888;
   private final int GR40 = 0x666666;
+  private final int GR33 = 0x555555;
   private final int GR26 = 0x444444;
   private final int GR20 = 0x333333;
-  private final int DARK = 0x333333;
-  private final int THIN = 0x555555;
-  private final int GRAY = 0x888888;
   private final int CYAN = 0x00AAFF;
   private final int BLUE = 0x000088;
   private final int GREEN = 0x88FF00;
@@ -48,6 +48,7 @@ public class SudokuJ2ME extends MIDlet {
   private boolean locked = true;
   private final int cbarHeight = 38;
   private int menuSelection = 0;
+  private int[] counts;
 
   public SudokuJ2ME() {
     display = Display.getDisplay(this);
@@ -367,11 +368,12 @@ public class SudokuJ2ME extends MIDlet {
       // Draw lines on board
       for (int i = 0; i < 10; i++) {
         int offset = i * cellSize;
-        g.setColor(((i == 3) || (i == 6)) ? WHITE : THIN);
+        g.setColor(((i == 3) || (i == 6)) ? WHITE : GR33);
         g.drawLine(margin + 1, offset + margin, boardSize + margin - 1, offset + margin);
         g.drawLine(offset + margin, margin + 1, offset + margin, boardSize + margin - 1);
       }
 
+      counts = new int[9];
       for (int i = 0; i < puzzle.gameBoard.length; i++) {
         int thisValue = puzzle.gameBoard[i];
         int thisX = i % 9;
@@ -386,28 +388,33 @@ public class SudokuJ2ME extends MIDlet {
           g.setColor((thisValue == highlight) ? (puzzle.puzzleData[i] ? BLACK : WHITE) : (puzzle.puzzleData[i] ? CYAN : WHITE));
           specialFont.numbersImage = (thisValue == highlight) ? specialFont.numbersG : specialFont.numbersK;
           specialFont.numbers(g, String.valueOf(thisValue), cellSize * thisX + margin + 7, cellSize * thisY + margin + 3);
+          ++counts[thisValue - 1];
         } else {
           for (int t = 1; t < 10; t++) {
             if (puzzle.pencilMarks[i * 9 + t - 1]) {
-              g.setColor((t == highlight) ? WHITE : GRAY);
+              g.setColor((t == highlight) ? WHITE : GR53);
               drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
             }
           }
         }
       }
       // Selection border
-      g.setColor(highlight > 0 ? (usingPen ? GREEN : YELLOW) : GRAY);
+      g.setColor(highlight > 0 ? (usingPen ? GREEN : YELLOW) : GR53);
       g.drawRect(cellSize * selectX + margin, cellSize * selectY + margin, cellSize, cellSize);
       g.drawRect(cellSize * selectX + margin - 1, cellSize * selectY + margin - 1, cellSize + 2, cellSize + 2);
 
       g.setFont(smallFont);
-      specialFont.numbersImage = specialFont.numbersK;
       for (int n = 1; n < 10; n++) {
-        g.setColor(((highlight == n) && (!usingPen)) ? YELLOW : GRAY);
-        g.drawString(String.valueOf(n), 20 * n + 21, height - 72, Graphics.HCENTER | Graphics.TOP);
-        g.drawString(String.valueOf(n), 20 * n + 22, height - 72, Graphics.HCENTER | Graphics.TOP);
-        g.setColor(((highlight == n) && (usingPen)) ? GREEN : GRAY);
-        specialFont.numbers(g, String.valueOf(n), 20 * n + 13, height - 52);
+        if (counts[n - 1] > 8) {
+          g.setColor(((highlight == n) && (usingPen)) ? GREEN : GR53);
+          g.drawRect(spacer * n + 2, height - 54, 19, 24);
+        }
+        specialFont.numbersImage = specialFont.numbersK;
+        g.setColor(((highlight == n) && (!usingPen)) ? ((counts[n - 1] < 9) ? GREEN : YELLOW) : GR53);
+        g.drawString(String.valueOf(n), spacer * n + 13, height - 72, Graphics.HCENTER | Graphics.TOP);
+        g.drawString(String.valueOf(n), spacer * n + 14, height - 72, Graphics.HCENTER | Graphics.TOP);
+        g.setColor(((highlight == n) && (usingPen)) ? GREEN : GR53);
+        specialFont.numbers(g, String.valueOf(n), spacer * n + 5, height - 52);
       }
     }
 
