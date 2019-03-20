@@ -19,7 +19,7 @@ public class SudokuJ2ME extends MIDlet {
   private final int cellSize = 26;
   private final int padding = 4;
   private final int margin = 2;
-  private final int spacer = 22;
+  private final int spacer = 24;
   private final int boardSize = cellSize * 9;
   private final int BLACK = 0x000000;
   private final int WHITE = 0xFFFFFF;
@@ -407,14 +407,14 @@ public class SudokuJ2ME extends MIDlet {
       for (int n = 1; n < 10; n++) {
         if (counts[n - 1] > 8) {
           g.setColor(((highlight == n) && (usingPen)) ? GREEN : GR53);
-          g.drawRect(spacer * n + 2, height - 54, 19, 24);
+          g.drawRect(spacer * n - 6, height - 54, 19, 24);
         }
         specialFont.numbersImage = specialFont.numbersK;
         g.setColor(((highlight == n) && (!usingPen)) ? ((counts[n - 1] < 9) ? GREEN : YELLOW) : GR53);
-        g.drawString(String.valueOf(n), spacer * n + 13, height - 72, Graphics.HCENTER | Graphics.TOP);
-        g.drawString(String.valueOf(n), spacer * n + 14, height - 72, Graphics.HCENTER | Graphics.TOP);
+        g.drawString(String.valueOf(n), spacer * n + 5, height - 72, Graphics.HCENTER | Graphics.TOP);
+        g.drawString(String.valueOf(n), spacer * n + 6, height - 72, Graphics.HCENTER | Graphics.TOP);
         g.setColor(((highlight == n) && (usingPen)) ? GREEN : GR53);
-        specialFont.numbers(g, String.valueOf(n), spacer * n + 5, height - 52);
+        specialFont.numbers(g, String.valueOf(n), spacer * n - 3, height - 52);
       }
     }
 
