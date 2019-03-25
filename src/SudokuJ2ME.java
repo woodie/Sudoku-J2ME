@@ -319,9 +319,9 @@ public class SudokuJ2ME extends MIDlet {
             int index = selectY * 9 + selectX;
             int entry = (highlight == selected) ? 0 : highlight;
             if (usingPen) {
-              puzzle.penValue(index, entry);
+              puzzle.makeMove(index, entry, true);
             } else if (selected == 0) {
-              puzzle.pencilValue(index, entry);
+              puzzle.makeMove(index, entry, false);
             }
           }
         }

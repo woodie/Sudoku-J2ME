@@ -3,6 +3,12 @@ import java.util.Random;
 import javax.microedition.io.*;
 import javax.microedition.rms.*;
 
+/**
+ * Keep track of:
+ * - current game, level and moves
+ * - elapsed time and store best time per level
+ **/
+
 public class Puzzle {
   private RecordStore rs = null;
   private static final int LENGTH = 3;
@@ -23,8 +29,8 @@ public class Puzzle {
     gameBoard = new int[81];
     puzzleData = new boolean[81];
     Random random = new Random();
-    if ((level < 0) || (level > Puzzle.levels.length)) level = 1;
     if ((puzzle < 0) || (puzzle > 18)) puzzle = random.nextInt(19);
+    if ((level < 0) || (level > Puzzle.levels.length)) level = 1;
     StringBuffer sb = new StringBuffer(24);
     sb.append(levels[level]);
     sb.append(": ");
@@ -56,16 +62,7 @@ public class Puzzle {
         }
       }
     } catch (Exception e) {}
-  }
-
-  public void pencilValue(int cell, int value) {
-    int tickIndex = cell * 9 + value - 1;
-    pencilMarks[tickIndex] = pencilMarks[tickIndex] ? false : true;
-  }
-
-  public void penValue(int cell, int value) {
-    gameBoard[cell] = value;
-    pencilCleanup(cell, value);
+    saveGame(puzzle, level);
   }
 
   public void pencilCleanup(int cell, int value) {
@@ -97,31 +94,61 @@ public class Puzzle {
     }
   }
 
-  // (puzzle, level, moves) 0-19, 0-3  0-255
-  //   (cell, value, pen)     0-80, 1-9, 1
-  //   (cell, value, pencil)  0-80, 1-9, 0
-
-  //openRecStore();
-  //loadMoves();
-  //closeRecStore();
-
-
-
-  public byte[] toByteArray(int value) {
-    return new byte[] { (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)value };
-  }
-
-  public int fromByteArray(byte[] bytes) {
-    return bytes[0] << 24 | (bytes[1] & 0xFF) << 16 | (bytes[2] & 0xFF) << 8 | (bytes[3] & 0xFF);
-  }
-
-  public void saveMoves(int[] values) {
-    for (int i = 0; i < values.length; i++) {
-      byte[] rec = toByteArray(values[i]);
-      try {
-        rs.addRecord(rec, 0, rec.length);
-      } catch (Exception e) {}
+  public void makeMove(int cell, int value, boolean pen) {
+    if (pen) {
+      gameBoard[cell] = value;
+      pencilCleanup(cell, value);
+    } else {
+      int tickIndex = cell * 9 + value - 1;
+      pencilMarks[tickIndex] = pencilMarks[tickIndex] ? false : true;
     }
+    saveMove((byte)cell, (byte)value, (byte)(pen ? 1 : 0));
+  }
+
+  /*
+
+  elapsed
+
+  lastRecord: rs.getNumRecords - offset
+  redoCount 
+  lastMove
+  lastRecord
+  
+  rs.getNumRecords
+
+  undo:
+  - save setback - 1 if 
+  - reload game
+
+  redo: 
+  - 
+
+  */
+
+  public void saveGame(int puzzle, int level) {
+    byte[] payload = new byte[] {(byte)(puzzle), (byte)(level), (byte)(0), (byte)(0)};
+    deleteRecStore();
+    openRecStore();
+    try {
+      rs.addRecord(payload, 0, payload.length);
+    } catch (Exception e) {}
+    closeRecStore();
+  }
+
+  public void saveMove(byte cell, byte value, byte pen) {
+    byte[] payload = new byte[] {cell, value, pen};
+    byte[] setback = new byte[1];
+    openRecStore();
+    try {
+      rs.getRecord(1, setback, 2);
+      if (setback[0] == (byte)0) {
+        rs.addRecord(payload, 0, payload.length);
+      } else {
+        int id = rs.getNumRecords() - (int)setback[0];
+        rs.setRecord(id, payload, 0, payload.length);
+      }
+    } catch (Exception e) {}
+    closeRecStore();
   }
 
   public void loadMoves(){
