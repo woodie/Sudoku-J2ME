@@ -16,7 +16,7 @@ public class Puzzle {
 
   public String description;
   public boolean[] pencilMarks;
-  public int[] gameBoard;
+  public byte[] gameBoard;
   public boolean[] puzzleData;
   public static final String[] levels = {"Simple", "Easy", "Intermediate", "Expert"};
 
@@ -26,7 +26,7 @@ public class Puzzle {
 
   public Puzzle(int level, int puzzle) {
     pencilMarks = new boolean[81 * 9];
-    gameBoard = new int[81];
+    gameBoard = new byte[81];
     puzzleData = new boolean[81];
     Random random = new Random();
     if ((puzzle < 0) || (puzzle > 18)) puzzle = random.nextInt(19);
@@ -52,9 +52,9 @@ public class Puzzle {
         } else {
           if (n == puzzle) {
             if (c == '.') {
-              gameBoard[i] = 0;
+              gameBoard[i] = 0x00;
             } else {
-              gameBoard[i] = c - 48;
+              gameBoard[i] = (byte) (c - 48);
               puzzleData[i] = true;
             }
             i++;
@@ -62,7 +62,7 @@ public class Puzzle {
         }
       }
     } catch (Exception e) {}
-    saveGame(puzzle, level);
+    saveGame((byte) puzzle, (byte) level);
   }
 
   public void pencilCleanup(int cell, int value) {
@@ -90,13 +90,13 @@ public class Puzzle {
       pencilMarks[i] = true;
     }
     for (int i = 0; i < gameBoard.length; i++) {
-      if (gameBoard[i] != 0) pencilCleanup(i, gameBoard[i]);
+      if (gameBoard[i] != 0x00) pencilCleanup(i, gameBoard[i]);
     }
   }
 
   public void makeMove(int cell, int value, boolean pen) {
     if (pen) {
-      gameBoard[cell] = value;
+      gameBoard[cell] = (byte) value;
       pencilCleanup(cell, value);
     } else {
       int tickIndex = cell * 9 + value - 1;
@@ -125,8 +125,8 @@ public class Puzzle {
 
   */
 
-  public void saveGame(int puzzle, int level) {
-    byte[] payload = new byte[] {(byte)(puzzle), (byte)(level), (byte)(0), (byte)(0)};
+  public void saveGame(byte puzzle, byte level) {
+    byte[] payload = new byte[] {puzzle, level, 0x00, 0x00};
     deleteRecStore();
     openRecStore();
     try {
@@ -141,10 +141,10 @@ public class Puzzle {
     openRecStore();
     try {
       rs.getRecord(1, setback, 2);
-      if (setback[0] == (byte)0) {
+      if (setback[0] == 0x00) {
         rs.addRecord(payload, 0, payload.length);
       } else {
-        int id = rs.getNumRecords() - (int)setback[0];
+        int id = rs.getNumRecords() - (int) setback[0];
         rs.setRecord(id, payload, 0, payload.length);
       }
     } catch (Exception e) {}

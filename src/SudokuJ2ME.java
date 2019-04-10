@@ -312,17 +312,13 @@ public class SudokuJ2ME extends MIDlet {
       int value = keyCode - 48;
       keyLabel = getKeyName(keyCode).toUpperCase();
       if (keyLabel.equals("SELECT")) {
-        if (locked) {
-          highlight = (highlight == selected) ? -1 : selected;
-        } else {
-          if (highlight > 0) {
-            int index = selectY * 9 + selectX;
-            int entry = (highlight == selected) ? 0 : highlight;
-            if (usingPen) {
-              puzzle.makeMove(index, entry, true);
-            } else if (selected == 0) {
-              puzzle.makeMove(index, entry, false);
-            }
+        if ((!locked) && (highlight > 0)) {
+          int index = selectY * 9 + selectX;
+          int entry = (highlight == selected) ? 0 : highlight;
+          if (usingPen) {
+            puzzle.makeMove(index, entry, true);
+          } else if (selected == 0) {
+            puzzle.makeMove(index, entry, false);
           }
         }
       } else if (keyLabel.equals("SOFT1")) {
