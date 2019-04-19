@@ -8,4 +8,5 @@ Here are the files:
 [JAD](https://raw.githubusercontent.com/woodie/Sudoku-J2ME/master/dist/Sudoku-J2ME.jad),
 [JAR](https://raw.githubusercontent.com/woodie/Sudoku-J2ME/master/dist/Sudoku-J2ME.jar)
 
-<img src="https://raw.githubusercontent.com/woodie/Sudoku-J2ME/master/docs/main.jpg">
+<img width="50%" src="https://raw.githubusercontent.com/woodie/Sudoku-J2ME/master/docs/main.jpg" valign="top">
+<img width="50%" src="https://raw.githubusercontent.com/woodie/Sudoku-J2ME/master/docs/menu.jpg" valign="top">

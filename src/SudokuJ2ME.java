@@ -37,7 +37,7 @@ public class SudokuJ2ME extends MIDlet {
   private final int YELLOW = 0xFFFF00;
   private final int SALMON = 0xFF6666;
   private final int CRIMSON = 0x770000;
-  private final int MUSTARD = 0x555500;
+  private final int MUSTARD = 0xAAAA00;
   private int selectX = 4;
   private int selectY = 4;
   private String keyLabel;
@@ -374,8 +374,9 @@ public class SudokuJ2ME extends MIDlet {
         int thisValue = puzzle.gameBoard[i];
         int thisX = i % 9;
         int thisY = i / 9;
-        // Highlight border
-        if ((thisValue == highlight) || ((highlight > -1) && (puzzle.pencilMarks[i * 9 + highlight - 1]))) {
+        boolean hintFill = ((highlight > -1) && (puzzle.pencilMarks[i * 9 + highlight - 1]));
+        // Highlight cells
+        if ((thisValue == highlight) || hintFill) {
           g.setColor((thisValue == highlight) ? FOREST : MUSTARD);
           g.fillRect(cellSize * thisX + margin + 1, cellSize * thisY + margin + 1, cellSize - 1, cellSize - 1);
         }
@@ -388,7 +389,7 @@ public class SudokuJ2ME extends MIDlet {
         } else {
           for (int t = 1; t < 10; t++) {
             if (puzzle.pencilMarks[i * 9 + t - 1]) {
-              g.setColor((t == highlight) ? WHITE : GR53);
+              g.setColor((t == highlight) ? WHITE: (hintFill ? GR33 : GR53));
               drawTick(g, cellSize * thisX + margin, cellSize * thisY + margin, t);
             }
           }
